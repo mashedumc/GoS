@@ -107,14 +107,14 @@ function MinionManager2:Update()
     self.tminion = {}
     for _, minion in pairs(self.minion) do
       if IsObjectAlive(minion) and GetDistanceSqr(minion) <= self.range1 and GetTeam(minion) == MINION_ENEMY then
-        table.insert(self.tminion, minion)
+        self.tminion[#self.tminion +1] = minion
       end
     end
 
     self.tmob = {}
     for _, mob in pairs(self.mob) do
       if IsObjectAlive(mob) and GetDistanceSqr(mob) <= self.range2 and GetTeam(mob) == 300 then
-        table.insert(self.tmob, mob)
+        self.tmob[#self.tmob +1] = mob
       end
     end
 
