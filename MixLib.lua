@@ -383,7 +383,7 @@ end
 
 function DCircle:Draw(Pos, bonusQuality)
     if self.cfg[self.link].r1:Value() and Pos then
-        local bQuality, menuQuality = bonusQuality or 0, self.cfg[self.link].r2:Value()/100
+        local bQuality, menuQuality = bonusQuality or 0, self.cfg[self.link].r2:Value()*0.01
         DrawCircle3D(Pos.x, Pos.y, Pos.z, self.range, self.width, self.cfg[self.link].r3:Value(), self.range*(20+bQuality)/100*menuQuality)
     end    
 end
