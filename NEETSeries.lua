@@ -1,7 +1,7 @@
---[[ NEET Series Version 0.099 ]]--
+--[[ NEET Series Version 0.1 ]]--
 -- > Added support Annie < --
 ---------------------------------------
-local NEETSeries_Version = 0.099
+local NEETSeries_Version = 0.1
 local Enemies, C = { }, 0
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
@@ -1594,7 +1594,7 @@ end
 GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
     if tonumber(OnlineVer) > NEETSeries_Version then
       NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
-      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..v..". Please F6 x2 to reload.") end)
+      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
     else
       if Supported[myHero.charName] then PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) end
     end
