@@ -1,7 +1,7 @@
---[[ NEET Series Version 0.11 ]]--
+--[[ NEET Series Version 0.12 ]]--
 -- > Fixed somethings < --
 ---------------------------------------
-local NEETSeries_Version = 0.11
+local NEETSeries_Version = 0.12
 local Enemies, C = { }, 0
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
@@ -14,7 +14,6 @@ if not ChallengerCommonLoaded then require('ChallengerCommon') end
 if not Analytics then require("Analytics") end
 
 local huge, max, min = math.huge, math.max, math.min
-DelayAction(function() for i = 1, heroManager.iCount do local hero = heroManager:getHero(i) if hero.team == MINION_ENEMY then C = C + 1 Enemies[C] = hero table.sort(Enemies, function(a,b) local t = {a.charName, b.charName} table.sort(t) local s1,_ = table.contains(t, a.charName) local s2,__ = table.contains(t, b.charName) return s1 < s2 end) end end end, 0.001)
 local Supported, StrID, StrN = Set {"Xerath", "Katarina", "KogMaw", "Annie"}, {"cb", "hr", "lc", "jc", "ks", "lh"}, {"Combo", "Harass", "LaneClear", "JungleClear", "KillSteal", "LastHit"}
 local EnemiesAround, AddCB, QWER, WardCheck = function(pos, range) return CountObjectsNearPos(pos, nil, range, Enemies, MINION_ENEMY) end, Callback.Add, {"Q", "W", "E", "R"}, Set {"SightWard", "VisionWard", "YellowTrinket"}
 
@@ -31,7 +30,7 @@ local DrawDmgOnHPBar = function(Menu, Color, Text)
         Menu:Menu("HPBar_"..Enemies[i].charName, "Draw Dmg HPBar "..Enemies[i].charName)
         Dt[i] = DrawDmgHPBar(Menu["HPBar_"..Enemies[i].charName], Color, Text)
       end
-    end, 1)
+    end, 0.001)
         return Dt
 end
 local AddMenu = function(Menu, ID, Text, Tbl, MP)
@@ -73,6 +72,17 @@ local GetFarmPosition2 = function(range, width, objects)
         return Pos, Hit
 end
 
+AddCB("Load", function()
+  for i = 1, heroManager.iCount do
+    local hero = heroManager:getHero(i)
+    if hero.team == MINION_ENEMY then
+      C = C + 1
+      Enemies[C] = hero
+      table.sort(Enemies, function(a,b) local t = {a.charName, b.charName} table.sort(t) local s1,_ = table.contains(t, a.charName) local s2,__ = table.contains(t, b.charName) return s1 < s2 end)
+	end
+  end
+end)
+    
 class "MinionManager2"
 function MinionManager2:__init(range1, range2)
     self.range1 = range1*range1
@@ -627,7 +637,7 @@ function NS_Katarina:CreateMenu()
         self.cfg.E:Boolean("Oncb_"..Enemies[i].charName, "Combo - Use E on "..Enemies[i].charName, true)
         self.cfg.E:Boolean("Onhr_"..Enemies[i].charName, "Harass - Use E on "..Enemies[i].charName, false)
       end
-    end, 1)
+    end, 0.001)
 
     --[[ Ignite Settings ]]--
     if Ignite then AddMenu(self.cfg, "Ignite", "Ignite Settings", {false, false, false, false, true, false}) end
@@ -650,7 +660,7 @@ function NS_Katarina:CreateMenu()
         self.cfg.misc.D:Slider("Q", "Q Delay (ms)", 0, 0, 1000, 1)
         self.cfg.misc.D:Slider("W", "W Delay (ms)", 0, 0, 1000, 1)
         self.cfg.misc.D:Slider("E", "E Delay (ms)", 100, 0, 1000, 1)
-      SetSkin(self.cfg.misc, {"Classic", "Mercenary", "Red Card", "Bilgewater", "Kitty Cat", "High Command", "Sandstorm", "Slay Belle", "Warring Kingdoms", "PJ Kata", "Disable"})
+      SetSkin(self.cfg.misc, {"Classic", "Mercenary", "Red Card", "Bilgewater", "Kitty Cat", "High Command", "Sandstorm", "Slay Belle", "Warring Kingdoms", "PROJECT:", "Disable"})
     PermaShow(self.cfg.misc.J.F)
 end
 
@@ -1369,7 +1379,7 @@ function NS_Annie:CreateMenu()
       self.cfg.misc:Menu("hc", "Spell HitChance")
         self.cfg.misc.hc:Slider("W", "W Hit-Chance", 25, 1, 100, 1, function(value) self.W.Prediction:SetHitChance(value*0.01) end)
         self.cfg.misc.hc:Slider("R", "R Hit-Chance", 40, 1, 100, 1, function(value) self.R.Prediction:SetHitChance(value*0.01) end)
-      SetSkin(self.cfg.misc, {"Classic", "Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech"})
+      SetSkin(self.cfg.misc, {"Classic", "Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech", "Disable"})
     PermaShow(self.cfg.ult.u3)
 end
 
@@ -1590,11 +1600,11 @@ end
 ----------------[[ Script Load ]]------------------------
 do
     if not Supported[myHero.charName] then NEETSeries_Print("Not Supported For "..myHero.charName) return end
-    _G["NS_"..myHero.charName]()
+    AddCB("Load", function() _G["NS_"..myHero.charName]() end)
     Analytics("NEETSeries", "Ryzuki")
 end
 
-Callback.Add("Load", function()
+AddCB("Load", function()
   GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
       if tonumber(OnlineVer) > NEETSeries_Version then
         NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
