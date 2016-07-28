@@ -400,7 +400,7 @@ end
 GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.version", function(OnlineVer)
     if tonumber(OnlineVer) > MixLibVersion then
       Mix_Print("New Version found (v"..OnlineVer.."). Please wait...")
-      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.lua", COMMON_PATH.."MixLib.lua", function() Mix_Print("Updated to version "..v..". Please F6 x2 to reload.") end)
+      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.lua", COMMON_PATH.."MixLib.lua", function() Mix_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
     else
       Mix_Print("You are using lastest version (v"..MixLibVersion..")") Mix:PrintCurrPredOW()
     end
