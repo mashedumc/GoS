@@ -1,5 +1,5 @@
---[[ Mix Lib Version 0.091 ]]--
-local MixLibVersion = 0.091
+--[[ Mix Lib Version 0.092 ]]--
+local MixLibVersion = 0.092
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local Prediction, OW, gw, Check, RIP = {"OpenPredict", "GPrediction", "GoSPrediction", "IPrediction"}, mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -55,7 +55,7 @@ function MixLib:__init()
    for i = 1, 7 do
     self.Menu.ifo:Info("credit_"..i, "Credit --> "..Credits[i])
    end
-    Callback.Add("Load", function() self:CheckOtherScript() end)
+    self:CheckOtherScript()
 end
 
 function MixLib:CheckOtherScript()
@@ -397,11 +397,13 @@ do
       MixLibLoaded()
 end
 
-GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.version", function(OnlineVer)
-    if tonumber(OnlineVer) > MixLibVersion then
-      Mix_Print("New Version found (v"..OnlineVer.."). Please wait...")
-      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.lua", COMMON_PATH.."MixLib.lua", function() Mix_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
-    else
-      Mix_Print("You are using lastest version (v"..MixLibVersion..")") Mix:PrintCurrPredOW()
-    end
+Callback.Add("Load", function()
+  GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.version", function(OnlineVer)
+      if tonumber(OnlineVer) > MixLibVersion then
+        Mix_Print("New Version found (v"..OnlineVer.."). Please wait...")
+        DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.lua", COMMON_PATH.."MixLib.lua", function() Mix_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
+      else
+        Mix_Print("You are using lastest version (v"..MixLibVersion..")") Mix:PrintCurrPredOW()
+      end
+  end)
 end)
