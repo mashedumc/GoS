@@ -1,7 +1,7 @@
---[[ NEET Series Version 0.1 ]]--
--- > Added support Annie < --
+--[[ NEET Series Version 0.11 ]]--
+-- > Fixed somethings < --
 ---------------------------------------
-local NEETSeries_Version = 0.1
+local NEETSeries_Version = 0.11
 local Enemies, C = { }, 0
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
@@ -589,8 +589,8 @@ end
 
 function NS_Katarina:LoadVariables()
     self.check = { Q = { }, R = false, LastCastTime = 0, wards = { }, cast = true }
-    self.Q = { Range = GetData(_Q).range, Speed = 1500,           Delay = 0.25, Damage = function(unit) return CalcDmg(2, unit, 35 + 25*GetData(_Q).level + 0.45*myHero.ap) end, time = { last = 0, unit = { sPos = nil, obj = nil} }}
-    self.W = { Range = GetData(_W).range, Speed = huge,      Delay = 0.3,  Damage = function(unit) return CalcDmg(2, unit, 5 + 35*GetData(_W).level + 0.25*myHero.ap + 0.6*myHero.totalDamage) end, Width = 375}
+    self.Q = { Range = GetData(_Q).range, Speed = 1500, Delay = 0.25, Damage = function(unit) return CalcDmg(2, unit, 35 + 25*GetData(_Q).level + 0.45*myHero.ap) end, time = { last = 0, unit = { sPos = nil, obj = nil} }}
+    self.W = { Range = GetData(_W).range, Speed = huge, Delay = 0.3,  Damage = function(unit) return CalcDmg(2, unit, 5 + 35*GetData(_W).level + 0.25*myHero.ap + 0.6*myHero.totalDamage) end, Width = 375}
     self.E = { Range = GetData(_E).range, Damage = function(unit) return CalcDmg(2, unit, 10 + 30*GetData(_E).level + 0.25*myHero.ap) end}
     self.R = { Range = GetData(_R).range, Damage = function(unit) return CalcDmg(2, unit, 150 + 200*GetData(_R).level + 2.5*myHero.ap + 3.75*myHero.totalDamage) end}
 
@@ -650,7 +650,7 @@ function NS_Katarina:CreateMenu()
         self.cfg.misc.D:Slider("Q", "Q Delay (ms)", 0, 0, 1000, 1)
         self.cfg.misc.D:Slider("W", "W Delay (ms)", 0, 0, 1000, 1)
         self.cfg.misc.D:Slider("E", "E Delay (ms)", 100, 0, 1000, 1)
-      SetSkin(self.cfg.misc, {"Classic", "Mercenary", "Red Card", "Bilgewater", "Kitty Cat", "High Command", "Sandstorm", "Slay Belle", "Warring Kingdoms", "Disable"})
+      SetSkin(self.cfg.misc, {"Classic", "Mercenary", "Red Card", "Bilgewater", "Kitty Cat", "High Command", "Sandstorm", "Slay Belle", "Warring Kingdoms", "PJ Kata", "Disable"})
     PermaShow(self.cfg.misc.J.F)
 end
 
@@ -680,9 +680,9 @@ end
 
 function NS_Katarina:CastE(target)
     if not ValidTarget(target, self.E.Range) then return end
-     if (IsReady(_Q) and ValidTarget(target, self.Q.Range) and self.Q.time.unit.obj and target == self.Q.time.unit.obj and os.clock() - self.Q.time.last >= GetDistance(self.Q.time.unit.sPos, self.Q.time.unit.obj.pos)/1800) or IsReady(_Q) == false or GetDistance(target.pos) > self.Q.Range then
+    if (self.Q.time.unit.obj and target == self.Q.time.unit.obj and os.clock() - self.Q.time.last + GetLatency()*0.0005 >= GetDistance(self.Q.time.unit.sPos, self.Q.time.unit.obj.pos)/1800) or not self.Q.time.unit.obj or self.Q.time.unit.obj.dead then
       if os.clock() - self.check.LastCastTime > self.cfg.misc.D.E:Value()*0.001 then CastTargetSpell(target, _E) end
-     end
+    end
 end
 
 function NS_Katarina:CastR(target)
@@ -699,7 +699,7 @@ function NS_Katarina:Tick()
       if IsReady(_W) and self.cfg.W.cb:Value() then self:CastW(target) end
       if IsReady(_E) and self.cfg.E.cb:Value() and self.cfg.E["Oncb_"..target.charName]:Value() then
         if not IsReady(_Q) and not IsReady(_W) then self:CastE(target) end
-        if (IsReady(_Q) or IsReady(_W)) and GetDistance(target.pos) > 500 then self:CastE(target) end
+        if (IsReady(_Q) and GetDistance(target.pos) > self.Q.Range) or (IsReady(_Q) == false and IsReady(_W) and GetDistance(target.pos) > self.W.Range) then self:CastE(target) end
       end
       if IsReady(_R) and self.cfg.R:Value() then self:CastR(target) end
     end
@@ -709,7 +709,7 @@ function NS_Katarina:Tick()
       if IsReady(_W) and self.cfg.W.hr:Value() then self:CastW(target) end
       if IsReady(_E) and self.cfg.E.hr:Value() and self.cfg.E["Onhr_"..target.charName]:Value() then
         if not IsReady(_Q) and not IsReady(_W) then self:CastE(target) end
-        if (IsReady(_Q) or IsReady(_W)) and GetDistance(target.pos) > 500 then self:CastE(target) end
+        if (IsReady(_Q) and GetDistance(target.pos) > self.Q.Range) or (IsReady(_Q) == false and IsReady(_W) and GetDistance(target.pos) > self.W.Range) then self:CastE(target) end
       end
     end
       if IsReady(_Q) and not self.check.R and self.cfg.Q.Ahr:Value() and target then self:CastQ(target) end
@@ -900,10 +900,11 @@ function NS_Katarina:QBuff(unit)
 end
 
 function NS_Katarina:DamageCheck(unit)
-    local QDmg = IsReady(_Q) and self.Q.Damage(unit) or 0
-    local WDmg = IsReady(_W) and self.W.Damage(unit) or 0
-    local EDmg = IsReady(_E) and self.E.Damage(unit) or 0
-      return QDmg + WDmg + EDmg + self:QBuff(unit)
+    local QDmg  = IsReady(_Q) and self.Q.Damage(unit) or 0
+    local WDmg  = IsReady(_W) and self.W.Damage(unit) or 0
+    local EDmg  = IsReady(_E) and self.E.Damage(unit) or 0
+    local QBuff = (IsReady(_Q) or IsReady(_W) or IsReady(_E)) and self:QBuff(unit) or 0
+      return QDmg + WDmg + EDmg + QBuff
 end
 
 function NS_Katarina:CountCheck()
@@ -925,15 +926,15 @@ end
 function NS_Katarina:GetJumpTarget()
     local mPos = Vector(GetMousePos())
       if MinionsAround(mPos, 130, MINION_ENEMY) > 0 then
-        return self:GetJump(minionManager.objects, MINION_ENEMY)
-      elseif MinionsAround(mPos, 120, 300) > 0 then
-        return self:GetJump(minionManager.objects, 300)
+        return self:GetJump(minionManager.objects, true, MINION_ENEMY)
+      elseif MinionsAround(mPos, 130, 300) > 0 then
+        return self:GetJump(minionManager.objects, true, 300)
       elseif EnemiesAround(mPos, 130) > 0 then
-        return self:GetJump(Enemies, MINION_ENEMY)
+        return self:GetJump(Enemies, true, MINION_ENEMY)
       elseif MinionsAround(mPos, 130, MINION_ALLY) > 0 then
-        return self:GetJump(minionManager.objects, MINION_ALLY)
+        return self:GetJump(minionManager.objects, true, MINION_ALLY)
       elseif AlliesAround(mPos, 130) > 0 then
-        return self:GetJump(GetAllyHeroes(), MINION_ALLY)
+        return self:GetJump(GetAllyHeroes(), true, MINION_ALLY)
       else
         if CountObjectsNearPos(mPos, nil, 130, self.check.wards) > 0 then return self:GetJump(self.check.wards)
         elseif CountObjectsNearPos(Vector(myHero), nil, self.E.Range, self.check.wards) > 0 and GetDistanceSqr(mPos, self:GetJump(self.check.wards)) < GetDistanceSqr(mPos) then return self:GetJump(self.check.wards)
@@ -943,10 +944,10 @@ function NS_Katarina:GetJumpTarget()
         return nil
 end
 
-function NS_Katarina:GetJump(Objects, Team)
+function NS_Katarina:GetJump(Objects, Check, Team)
     local mPos, target = Vector(GetMousePos()), nil
     for _, m in pairs(Objects) do
-      if (not Team or m.team == Team) and IsInDistance(m, self.E.Range) and m.visible and m.health > 0 and (not target or GetDistanceSqr(m, mPos) < GetDistanceSqr(target, mPos)) then
+      if (not Team or m.team == Team) and ((Check and GetDistance(mPos, m) <= 130) or not Check) and IsInDistance(m, self.E.Range) and m.visible and m.health > 0 and (not target or GetDistanceSqr(m, mPos) < GetDistanceSqr(target, mPos)) then
         target = m
       end
     end
@@ -989,9 +990,11 @@ function NS_Katarina:CheckAttack(unit, spell)
     if unit.networkID == myHero.networkID and unit.dead == false then
       if spell.name:lower() == "katarinaq" then
         self.check.LastCastTime = os.clock() + 0.25
-        self.Q.time.last = os.clock()
-        self.Q.time.unit.sPos = spell.startPos
-        self.Q.time.unit.obj = spell.target
+        if spell.target.type == "AIHeroClient" then
+          self.Q.time.last = os.clock()
+          self.Q.time.unit.sPos = spell.startPos
+          self.Q.time.unit.obj = spell.target
+        end
       elseif spell.name:lower() == "katarinaw" then
         self.check.LastCastTime = os.clock() + 0.2
       elseif spell.name:lower() == "katarinae" then
@@ -1591,11 +1594,13 @@ do
     Analytics("NEETSeries", "Ryzuki")
 end
 
-GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
-    if tonumber(OnlineVer) > NEETSeries_Version then
-      NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
-      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
-    else
-      if Supported[myHero.charName] then PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) end
-    end
+Callback.Add("Load", function()
+  GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
+      if tonumber(OnlineVer) > NEETSeries_Version then
+        NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
+        DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
+      else
+        if Supported[myHero.charName] then PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) end
+      end
+  end)
 end)
