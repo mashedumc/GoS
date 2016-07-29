@@ -1,7 +1,7 @@
---[[ NEET Series Version 0.12 ]]--
+--[[ NEET Series Version 0.13 ]]--
 -- > Fixed somethings < --
 ---------------------------------------
-local NEETSeries_Version = 0.12
+local NEETSeries_Version = 0.13
 local Enemies, C = { }, 0
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
@@ -639,11 +639,15 @@ function NS_Katarina:CreateMenu()
       end
     end, 0.001)
 
+    --[[ R Settings ]]--
+    self.cfg:Menu("ult", "R Settings")
+        self.cfg.ult:Boolean("cb", "Use R in Combo", true)
+        self.cfg.ult:DropDown("set", "Set R Mode ", 1, {"Killable Check (recommend)", "If can hit x enemies"})
+        self.cfg.ult:Slider("hitR", "R if can hit enemies >=", 2, 1, 5, 1)
+        self.cfg.ult:Info("info", "Recommend choose \"Killable Check\"")
+
     --[[ Ignite Settings ]]--
     if Ignite then AddMenu(self.cfg, "Ignite", "Ignite Settings", {false, false, false, false, true, false}) end
-
-    --[[ Ultimate Settings ]]--
-    self.cfg:Boolean("R", "Use R in Combo", true)
 
     --[[ Drawings Menu ]]--
     self.cfg:Menu("dw", "Drawings Mode")
@@ -654,8 +658,9 @@ function NS_Katarina:CreateMenu()
       self.cfg.misc:Menu("J", "E Jump Setting")
         self.cfg.misc.J:Boolean("K", "Enable Auto Jump to KS", true)
         self.cfg.misc.J:KeyBinding("F", "Flee - AutoJump (G)", 71)
+        self.cfg.misc.J:Boolean("Uw", "Use Ward", true)
         self.cfg.misc.J:Boolean("P", "Put ward at maxRange", true)
-        self.cfg.misc.J:Info("if1", "Jump Priority: Minion -> Hero -> Ward")
+        self.cfg.misc.J:Info("if1", "Jump Priority: Hero -> Minion -> Ward")
       self.cfg.misc:Menu("D", "Setting Spells Delay")
         self.cfg.misc.D:Slider("Q", "Q Delay (ms)", 0, 0, 1000, 1)
         self.cfg.misc.D:Slider("W", "W Delay (ms)", 0, 0, 1000, 1)
@@ -665,7 +670,7 @@ function NS_Katarina:CreateMenu()
 end
 
 function NS_Katarina:Checking()
-    if self.check.R and (self:KillCheck() or EnemiesAround(myHero.pos, 600) == 0) then Mix:BlockOrb(false) end
+    if self.check.R and ((self.cfg.ult.set:Value() == 1 and self:KillCheck()) or EnemiesAround(myHero.pos, 600) == 0) then Mix:BlockOrb(false) end
     for i = 1, C do
 	local enemy = Enemies[i]
       if ValidTarget(enemy, 3000) and self.HPBar[i] then
@@ -690,14 +695,16 @@ end
 
 function NS_Katarina:CastE(target)
     if not ValidTarget(target, self.E.Range) then return end
-    if (self.Q.time.unit.obj and target == self.Q.time.unit.obj and os.clock() - self.Q.time.last + GetLatency()*0.0005 >= GetDistance(self.Q.time.unit.sPos, self.Q.time.unit.obj.pos)/1800) or not self.Q.time.unit.obj or self.Q.time.unit.obj.dead then
+    if (target == self.Q.time.unit.obj and os.clock() - self.Q.time.last + GetLatency()*0.0005 >= GetDistance(self.Q.time.unit.sPos, self.Q.time.unit.obj.pos)/1800) or self.Q.time.unit.obj ~= target or not self.Q.time.unit.obj or self.Q.time.unit.obj.dead then
       if os.clock() - self.check.LastCastTime > self.cfg.misc.D.E:Value()*0.001 then CastTargetSpell(target, _E) end
     end
 end
 
 function NS_Katarina:CastR(target)
-    if IsReady(_Q) or IsReady(_W) or IsReady(_E) or not ValidTarget(target, 470) then return end
-      if GetHP2(target) + target.hpRegen*2.5 < self.R.Damage(target) then CastSpell(_R) end
+    if IsReady(_Q) or IsReady(_W) or IsReady(_E) then return end
+      if (self.cfg.ult.set:Value() == 1 and ValidTarget(target, 470) and GetHP2(target) + target.hpRegen*2.5 < self.R.Damage(target)) or (self.cfg.ult.set:Value() == 2 and EnemiesAround(myHero.pos, 500) >= self.cfg.ult.hitR:Value()) then
+        CastSpell(_R)
+      end
 end
 
 function NS_Katarina:Tick()
@@ -711,7 +718,7 @@ function NS_Katarina:Tick()
         if not IsReady(_Q) and not IsReady(_W) then self:CastE(target) end
         if (IsReady(_Q) and GetDistance(target.pos) > self.Q.Range) or (IsReady(_Q) == false and IsReady(_W) and GetDistance(target.pos) > self.W.Range) then self:CastE(target) end
       end
-      if IsReady(_R) and self.cfg.R:Value() then self:CastR(target) end
+      if IsReady(_R) and self.cfg.ult.cb:Value() then self:CastR(target) end
     end
 
     if Mix:Mode() == "Harass" and target and not self.check.R then
@@ -935,12 +942,12 @@ end
 
 function NS_Katarina:GetJumpTarget()
     local mPos = Vector(GetMousePos())
-      if MinionsAround(mPos, 130, MINION_ENEMY) > 0 then
+      if EnemiesAround(mPos, 130) > 0 then
+        return self:GetJump(Enemies, true, MINION_ENEMY)
+      elseif MinionsAround(mPos, 130, MINION_ENEMY) > 0 then
         return self:GetJump(minionManager.objects, true, MINION_ENEMY)
       elseif MinionsAround(mPos, 130, 300) > 0 then
         return self:GetJump(minionManager.objects, true, 300)
-      elseif EnemiesAround(mPos, 130) > 0 then
-        return self:GetJump(Enemies, true, MINION_ENEMY)
       elseif MinionsAround(mPos, 130, MINION_ALLY) > 0 then
         return self:GetJump(minionManager.objects, true, MINION_ALLY)
       elseif AlliesAround(mPos, 130) > 0 then
@@ -948,7 +955,7 @@ function NS_Katarina:GetJumpTarget()
       else
         if CountObjectsNearPos(mPos, nil, 130, self.check.wards) > 0 then return self:GetJump(self.check.wards)
         elseif CountObjectsNearPos(Vector(myHero), nil, self.E.Range, self.check.wards) > 0 and GetDistanceSqr(mPos, self:GetJump(self.check.wards)) < GetDistanceSqr(mPos) then return self:GetJump(self.check.wards)
-        elseif CountObjectsNearPos(mPos, nil, 300, self.check.wards) == 0 then self:PutWard(mPos)
+        elseif CountObjectsNearPos(mPos, nil, 300, self.check.wards) == 0 and self.cfg.misc.J.Uw:Value() then self:PutWard(mPos)
         end
       end
         return nil
@@ -1606,11 +1613,11 @@ end
 
 AddCB("Load", function()
   GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
-      if tonumber(OnlineVer) > NEETSeries_Version then
-        NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
-        DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
-      else
-        if Supported[myHero.charName] then PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) end
-      end
+    if tonumber(OnlineVer) > NEETSeries_Version then
+      NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
+      DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
+    else
+      if Supported[myHero.charName] then PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) end
+    end
   end)
 end)
