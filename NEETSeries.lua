@@ -1,7 +1,7 @@
---[[ NEET Series Version 0.13 ]]--
+--[[ NEET Series Version 0.14 ]]--
 -- > Fixed somethings < --
 ---------------------------------------
-local NEETSeries_Version = 0.13
+local NEETSeries_Version = 0.14
 local Enemies, C = { }, 0
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
@@ -1380,7 +1380,7 @@ function NS_Annie:CreateMenu()
     --[[ Misc Menu ]]--
     self.cfg:Menu("misc", "Misc Mode")  
       self.cfg.misc:Menu("E", "E Setting")
-        self.cfg.misc.E:Boolean("eb1", "Auto E to update stacks", false)
+        self.cfg.misc.E:KeyBinding("eb1", "Auto E for update stacks", 90, true)
         self.cfg.misc.E:Slider("eb2", "Auto E if %MP > ", 50, 1, 100, 1)
         self.cfg.misc.E:Boolean("eb3", "Auto E if need 1 stack to stun", true)
       self.cfg.misc:Menu("hc", "Spell HitChance")
@@ -1388,6 +1388,7 @@ function NS_Annie:CreateMenu()
         self.cfg.misc.hc:Slider("R", "R Hit-Chance", 40, 1, 100, 1, function(value) self.R.Prediction:SetHitChance(value*0.01) end)
       SetSkin(self.cfg.misc, {"Classic", "Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech", "Disable"})
     PermaShow(self.cfg.ult.u3)
+    PermaShow(self.cfg.misc.E.eb1)
 end
 
 function NS_Annie:ExtraLoad()
