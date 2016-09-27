@@ -15,19 +15,18 @@ local Mix_ChangePred = function(id) Mix_Print("Prediction was changed to "..Pred
 
 do
     local FilesCheck = {
-        {"ChallengerCommon.lua", "GPrediction.lua", "Item-Pi-brary.lua", "Analytics.lua", "Krystralib.lua", "ChallengerDLL.dll"},
+        {"ChallengerCommon.lua", "GPrediction.lua", "Item-Pi-brary.lua", "Analytics.lua", "Krystralib.lua"},
       {
         "https://raw.githubusercontent.com/D3ftsu/GoS/master/Common/ChallengerCommon.lua",
         "https://raw.githubusercontent.com/KeVuong/GoS/master/Common/GPrediction.lua",
         "https://raw.githubusercontent.com/DefinitelyRiot/PlatyGOS/master/Common/Item-Pi-brary.lua",
         "https://raw.githubusercontent.com/LoggeL/GoS/master/Analytics.lua",
-        "https://raw.githubusercontent.com/Lonsemaria/Gos/master/Common/Krystralib.lua",
-        "https://github.com/D3ftsu/GoS/raw/master/ChallengerDLL.dll"
+        "https://raw.githubusercontent.com/Lonsemaria/Gos/master/Common/Krystralib.lua"
       }
     }
     local c, t, fp = 0, {}, function(n) local s = n == 1 and "" or "s" Mix_Print(n.." file"..s.." need to be download. Please wait...") end
     
-    for i = 1, 6 do
+    for i = 1, 5 do
       if not FileExist(COMMON_PATH..FilesCheck[1][i]) then
         c = c + 1
         t[c] = i
