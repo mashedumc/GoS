@@ -1,5 +1,4 @@
 --[[ NEETSeries's plugin
---http://patorjk.com/software/taag/#p=display&f=Merlin1&t=NSXerath Merlin1
  ___  ___  _______   _______        __  ___________  __    __   
 |"  \/"  |/"     "| /"      \      /""\("     _   ")/" |  | "\  
  \   \  /(: ______)|:        |    /    \)__/  \\__/(:  (__)  :) 
