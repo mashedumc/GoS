@@ -1,4 +1,5 @@
 --[[ NEETSeries's plugin
+--http://patorjk.com/software/taag/#p=display&f=Merlin1&t=NSXerath Merlin1
  ___  ___  _______   _______        __  ___________  __    __   
 |"  \/"  |/"     "| /"      \      /""\("     _   ")/" |  | "\  
  \   \  /(: ______)|:        |    /    \)__/  \\__/(:  (__)  :) 
@@ -167,7 +168,7 @@ NS_Xe:Info("info", "Script Version: "..NEETSeries_Version)
 			NS_Xe.ult.cast:Info("if3", "Mouse: AutoCast Target in Mouse Range")
 			NS_Xe.ult.cast:Info("if4", "Recommend using Press Key")
 
-    --[[ Misc Menu ]]--
+	--[[ Misc Menu ]]--
 	NS_Xe:Menu("misc", "Misc Mode")
 		NS_Xe.misc:Menu("castCombo", "Combo Casting")
 			NS_Xe.misc.castCombo:Info("if", "Only Cast QWE if W or E Ready")
@@ -187,7 +188,7 @@ NS_Xe:Info("info", "Script Version: "..NEETSeries_Version)
 		NS_Xe.misc:KeyBinding("escape", "Escape (Use W/E)", 71)
 		SetSkin(NS_Xe.misc, {"Classic", "Runeborn", "Battlecast", "Scorched Earth", "Guardian Of The Sands", "Disable"})
 
-    --[[ Drawings Menu ]]--
+	--[[ Drawings Menu ]]--
 	NS_Xe:Menu("dw", "Drawings Mode")
 		NS_Xe.dw:Boolean("R", "Draw R Range Minimap", true)
 		NS_Xe.dw:Boolean("TK", "Draw Text Target R Killable", true)
@@ -299,7 +300,7 @@ local function CheckRUsing()
 			CastSpell(_R)
 			R.Activating = true
 		end
-    end
+	end
 end
 
 local function CheckRCasting()
@@ -311,10 +312,10 @@ local function CheckRCasting()
 		elseif NS_Xe.ult.cast.mode:Value() == 2 then
 			CastR(target)
 		end
-    else
+	else
 		local target = GetRTarget(GetMousePos(), NS_Xe.ult.cast.range:Value())
 		CastR(target)
-    end
+	end
 end
 
 local function UpdateValues()
@@ -333,10 +334,10 @@ local function UpdateValues()
 				Mix:BlockOrb(false)
 			end
 		end
-    end
+	end
 
-    if WObj and os.clock() - W.LastCastTime >= W.Range/W.Speed then WObj = nil end
-    if EObj and os.clock() - E.LastCastTime >= E.Range/E.Speed then EObj = nil end
+	if WObj and os.clock() - W.LastCastTime >= W.Delay then WObj = nil end
+	if EObj and os.clock() - E.LastCastTime >= E.Range/E.Speed then EObj = nil end
 
 	for i = 1, C do
 		local enemy = Enemies[i]
@@ -390,7 +391,7 @@ local function ProcSpellCast(unit, spell)
 				R.Delay5 = time
 			end
 		end
-    end
+	end
 end
 
 local function UpdateBuff(unit, buff)
@@ -461,7 +462,7 @@ local function KillSteal()
 		if IsReady(_Q) and NS_Xe.Q.ks:Value() and (ManaCheck(NS_Xe.Q.MPks:Value()) or Q.Charging) and EnemyHP < Q.Damage(enemy) then
 			CastQ(enemy)
 		end
-    end
+	end
 end
 
 local function LaneClear()
@@ -486,9 +487,9 @@ end
 local function JungleClear()
 	if not Cr.tmob[1] then return end
 	local mob = Cr.tmob[1]
-    if IsReady(_W) and NS_Xe.W.jc:Value() and ManaCheck(NS_Xe.W.MPjc:Value()) then CastSkillShot(_W, Vector(mob)) end
-    if IsReady(_E) and NS_Xe.E.jc:Value() and ManaCheck(NS_Xe.E.MPjc:Value()) and ValidTarget(mob, E.Range) then CastSkillShot(_E, Vector(mob)) end
-    if IsReady(_Q) and NS_Xe.Q.jc:Value() and (ManaCheck(NS_Xe.Q.MPjc:Value()) or Q.Charging) then if not Q.Charging then CastSkillShot(_Q, GetMousePos()) elseif ValidTarget(mob, Q.Range) then CastSkillShot2(_Q, Vector(mob)) end end
+	if IsReady(_W) and NS_Xe.W.jc:Value() and ManaCheck(NS_Xe.W.MPjc:Value()) then CastSkillShot(_W, Vector(mob)) end
+	if IsReady(_E) and NS_Xe.E.jc:Value() and ManaCheck(NS_Xe.E.MPjc:Value()) and ValidTarget(mob, E.Range) then CastSkillShot(_E, Vector(mob)) end
+	if IsReady(_Q) and NS_Xe.Q.jc:Value() and (ManaCheck(NS_Xe.Q.MPjc:Value()) or Q.Charging) then if not Q.Charging then CastSkillShot(_Q, GetMousePos()) elseif ValidTarget(mob, Q.Range) then CastSkillShot2(_Q, Vector(mob)) end end
 end
 
 local function Escape(Wtarget, ETarget)
@@ -534,8 +535,8 @@ function RKillable()
 end
 
 local function DrawRRange()
-    if not IsSReady(_R) then return end
-    if NS_Xe.dw.R:Value() then DrawCircleMinimap(myHero.pos, R.Range(), 1, 120, 0x20FFFF00) end
+	if not IsSReady(_R) then return end
+	if NS_Xe.dw.R:Value() then DrawCircleMinimap(myHero.pos, R.Range(), 1, 120, 0x20FFFF00) end
 end
 ------------------------------------
 
