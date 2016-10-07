@@ -118,16 +118,17 @@ do
 	Analytics("NEETSeries", "Ryzuki", true)
 end
 
+function NS_updateP(v, Ver)
+	if v <= #SupTbl and not FileExist(COMMON_PATH.."NS_"..SupTbl[v]..".lua") then NS_updateP(v + 1, Ver) return end
+	if v > #SupTbl then NEETSeries_Print("Updated to version "..Ver..". Please F6 x2 to reload.") return end
+	DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..(SupTbl[v])..".lua", COMMON_PATH.."NS_"..(SupTbl[v])..".lua", function() NS_updateP(v + 1, Ver) return end) return
+end
+
 OnLoad(function()
 	GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
 		if tonumber(OnlineVer) > NEETSeries_Version then
 			NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
-			local check = function(v)
-				if v <= 4 and not FileExist(COMMON_PATH.."NS_"..SupTbl[v]..".lua") then check(v + 1) return end
-				if v > 4 then NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") return end
-				DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..SupTbl[v]..".lua", COMMON_PATH.."NS_"..SupTbl[v]..".lua", function() check(v + 1) return end) return
-			end
-			DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() check(1) return end) return
+			DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NS_updateP(1, tostring(OnlineVer)) return end) return
 		else
 			if Supported[myHero.charName] then
 				PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) return
