@@ -1,11 +1,11 @@
 --[[ NEETSeries's plugin
- ___  ___  _______   _______        __  ___________  __    __   
-|"  \/"  |/"     "| /"      \      /""\("     _   ")/" |  | "\  
- \   \  /(: ______)|:        |    /    \)__/  \\__/(:  (__)  :) 
-  \\  \/  \/    |  |_____/   )   /' /\  \  \\_ /    \/      \/  
-  /\.  \  // ___)_  //      /   //  __'  \ |.  |    //  __  \\  
- /  \   \(:      "||:  __   \  /   /  \\  \\:  |   (:  (  )  :) 
-|___/\___|\_______)|__|  \___)(___/    \___)\__|    \__|  |__/  
+	 ___  ___  _______   _______        __  ___________  __    __   
+	|"  \/"  |/"     "| /"      \      /""\("     _   ")/" |  | "\  
+	 \   \  /(: ______)|:        |    /    \)__/  \\__/(:  (__)  :) 
+	  \\  \/  \/    |  |_____/   )   /' /\  \  \\_ /    \/      \/  
+	  /\.  \  // ___)_  //      /   //  __'  \ |.  |    //  __  \\  
+	 /  \   \(:      "||:  __   \  /   /  \\  \\:  |   (:  (  )  :) 
+	|___/\___|\_______)|__|  \___)(___/    \___)\__|    \__|  |__/  
 
 ---------------------------------------]]
 local Enemies, C, HPBar, CCast = { }, 0, { }, false
@@ -184,7 +184,7 @@ NS_Xe:Info("info", "Script Version: "..NEETSeries_Version)
 			NS_Xe.misc.delay:Slider("c4", "Delay CastR 4 (ms)", 290, 0, 1500, 1)
 			NS_Xe.misc.delay:Slider("c5", "Delay CastR 5 (ms)", 310, 0, 1500, 1)
 		NS_Xe.misc:KeyBinding("E", "Use E in Combo/Harass (Z)", 90, true, function() end, true)
-		NS_Xe.misc:KeyBinding("escape", "Escape (Use W/E)", 71)
+		NS_Xe.misc:KeyBinding("escape", "Escape use W/E (G)", 71)
 		SetSkin(NS_Xe.misc, {"Classic", "Runeborn", "Battlecast", "Scorched Earth", "Guardian Of The Sands", "Disable"})
 
 	--[[ Drawings Menu ]]--
