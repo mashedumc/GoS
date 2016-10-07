@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.15
+--[[ NEET Series Version 0.16
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-NEETSeries_Version = 0.15
+NEETSeries_Version = 0.16
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -19,7 +19,8 @@ if not FileExist(COMMON_PATH.."OpenPredict.lua") or not FileExist(COMMON_PATH.."
 if not ChallengerCommonLoaded then require('ChallengerCommon') end
 if not Analytics then require("Analytics") end
 
-local Supported = Set {"Xerath", "Katarina", "KogMaw", "Annie"}
+local SupTbl = {"Xerath"}
+local Supported = Set(SupTbl)
 
 class "__MinionManager"
 function __MinionManager:__init(range1, range2)
@@ -121,10 +122,15 @@ OnLoad(function()
 	GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
 		if tonumber(OnlineVer) > NEETSeries_Version then
 			NEETSeries_Print("New Version found (v"..OnlineVer.."). Please wait...")
-			DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") end)
+			local check = function(v)
+				if v <= 4 and not FileExist(COMMON_PATH.."NS_"..SupTbl[v]..".lua") then check(v + 1) return end
+				if v > 4 then NEETSeries_Print("Updated to version "..OnlineVer..". Please F6 x2 to reload.") return end
+				DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..SupTbl[v]..".lua", COMMON_PATH.."NS_"..SupTbl[v]..".lua", function() check(v + 1) return end) return
+			end
+			DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.lua", SCRIPT_PATH.."NEETSeries.lua", function() check(1) return end) return
 		else
 			if Supported[myHero.charName] then
-				PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser()))
+				PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"><i> Successfully Loaded</i> (v%s) | Good Luck</font> <font color=\"#C6E2FF\"><u>%s</u></font>", NEETSeries_Version, GetUser())) return
 			end
 		end
 	end)
