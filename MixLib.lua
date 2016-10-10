@@ -1,5 +1,6 @@
---[[ Mix Lib Version 0.094 ]]--
-local MixLibVersion = 0.094
+--[[ Mix Lib Version 0.095 ]]--
+
+local MixLibVersion = 0.095
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -8,7 +9,7 @@ local fixpos = function(unit) local fx = fix[unit.charName] and fix[unit.charNam
 local hpbar = function(unit) return { x = unit.hpBarPos.x + fixpos(unit).x, y = unit.hpBarPos.y + fixpos(unit).y } end
 local hpP = function(unit) return (unit.health + unit.shieldAD)*103/(unit.maxHealth + unit.shieldAD) end
 local dmgP = function(dmg, unit) return dmg*103/(unit.maxHealth + unit.shieldAD) end
-local Mix_Print = function(text) PrintChat(string.format("<font color=\"#00B359\"><b>[Mix Lib]:</b></font><font color=\"#FFFFFF\"> %s</font>",tostring(text))) end
+local Mix_Print = function(text) PrintChat(string.format("<font color=\"#00B359\"><b>[Mix Lib]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 do
 	local FilesCheck = {
@@ -51,6 +52,7 @@ OnUpdateBuff(function(unit, buff)
 		if buff.Name:lower() == "xeratharcanopulsechargeup" then _G.AttackUnit = RIP end
 	end
 end)
+
 OnRemoveBuff(function(unit, buff)
 	if unit == myHero then
 		if Check[buff.Type] then _G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell = Reback[1], Reback[2], Reback[3], Reback[4], Reback[5], Reback[6] end
@@ -65,19 +67,17 @@ function MixLib:__init()
 end
 
 function MixLib:PrintCurrOW()
-		Mix_Print("Current Orbwalker: "..self.OW)
+	Mix_Print("Current Orbwalker: "..self.OW)
 end
 
 function MixLib:Mode()
-	if self.OW == "GoSWalk" and gw[GoSWalk.CurrentMode+1] then
-		return gw[GoSWalk.CurrentMode+1]
-	else
-		return _G[self.OW]:Mode()
-	end
-        return ""
+	if self.OW == "GoSWalk" and gw[GoSWalk.CurrentMode+1] then return gw[GoSWalk.CurrentMode+1] end
+	if self.OW ~= "Disabled" then return _G[self.OW]:Mode() end
+		return ""
 end
 
 function MixLib:ResetAA()
+	if self.OW == "Disabled" then return end
 	if self.OW == "GoSWalk" then
 		GoSWalk:ResetAttack()
 	else
@@ -91,7 +91,7 @@ function MixLib:BlockOrb(boolean)
 end
 
 function MixLib:BlockAttack(boolean)
-	if attack_check == boolean then return end
+	if attack_check == boolean or self.OW == "Disabled" then return end
 	attack_check = boolean
 	local boolean = not boolean
 	if self.OW == "GoSWalk" then
@@ -102,7 +102,7 @@ function MixLib:BlockAttack(boolean)
 end
 
 function MixLib:BlockMovement(boolean)
-	if move_check == boolean then return end
+	if move_check == boolean or self.OW == "Disabled" then return end
 	move_check = boolean
 	local boolean = not boolean
 	if self.OW == "GoSWalk" then
@@ -165,15 +165,13 @@ function MixLib:GetSlotByName(NAME, s, e) -- Name, Start, End
 end
 
 function MixLib:GetCurrentTarget()
-	if self.OW == "GoSWalk" then
-		return GoSWalk.CurrentTarget
-	else
-		return _G[self.OW]:GetTarget()
-	end
-	return nil
+	if self.OW == "GoSWalk" then return GoSWalk.CurrentTarget end
+	if self.OW ~= "Disabled" then return _G[self.OW]:GetTarget() end
+		return nil
 end
 
 function MixLib:ForceTarget(target)
+	if self.OW == "Disabled" then return end
 	if self.OW == "GoSWalk" then
 		GoSWalk:ForceTarget(target)
 	elseif self.OW ~= "DAC" then
@@ -182,6 +180,7 @@ function MixLib:ForceTarget(target)
 end
 
 function MixLib:ForcePos(Pos)
+	if self.OW == "Disabled" then return end
 	local Pos = Vector(Pos)
 	if self.OW == "GoSWalk" then
 		GoSWalk:ForceMovePoint(Pos)
@@ -193,7 +192,7 @@ end
 local lastMove = 0
 function MixLib:Move(Pos)
 	local mPos = Pos or GetMousePos()
-	if lastMove + 0.36 < os.clock() then
+	if lastMove + 0.32 < os.clock() then
 		if GetDistance(mPos) > 100 then
 			local POS = Vector(myHero.pos + Vector(mPos - myHero.pos):normalized()*math.min(GetDistance(mPos),400))
 			MoveToXYZ(POS)
