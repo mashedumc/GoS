@@ -1,2 +1,2 @@
 # GoS
-GoS-Ryzu scripts
+Scripts
