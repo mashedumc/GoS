@@ -13,14 +13,14 @@ local huge, max, min = math.huge, math.max, math.min
 local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
 local pred, StrID, StrN = {"OpenPredict", "GPrediction", "GosPrediction"}, {"cb", "hr", "lc", "jc", "ks", "lh"}, {"Combo", "Harass", "LaneClear", "JungleClear", "KillSteal", "LastHit"}
-local GetData = function(spell) return myHero:GetSpellData(spell) end
-local CalcDmg = function(type, target, dmg) local calc = type == 1 and CalcPhysicalDamage or CalcMagicalDamage return calc(myHero, target, dmg) end
-local IsSReady = function(spell) return CanUseSpell(myHero, spell) == 0 or CanUseSpell(myHero, spell) == 8 end
-local ManaCheck = function(value) return value <= GetPercentMP(myHero) end
-local EnemiesAround = function(pos, range) return CountObjectsNearPos(pos, nil, range, Enemies, MINION_ENEMY) end
-local LoadGPred = function(value) if (value == 2 and not gPred) then require('GPrediction') end end
+local function GetData(spell) return myHero:GetSpellData(spell) end
+local function CalcDmg(type, target, dmg) local calc = type == 1 and CalcPhysicalDamage or CalcMagicalDamage return calc(myHero, target, dmg) end
+local function IsSReady(spell) return CanUseSpell(myHero, spell) == 0 or CanUseSpell(myHero, spell) == 8 end
+local function ManaCheck(value) return value <= GetPercentMP(myHero) end
+local function EnemiesAround(pos, range) return CountObjectsNearPos(pos, nil, range, Enemies, MINION_ENEMY) end
+local function LoadGPred(value) if (value == 2 and not gPred) then require('GPrediction') end end
 
-local AddMenu = function(Menu, ID, Pred, Text, Tbl, MP)
+local function AddMenu(Menu, ID, Pred, Text, Tbl, MP)
 	Menu:Menu(ID, Text)
 	if Pred then Menu[ID]:DropDown("Pred", "Choose Prediction:", 1, pred) end
 	for i = 1, 6 do
@@ -29,13 +29,13 @@ local AddMenu = function(Menu, ID, Pred, Text, Tbl, MP)
 	end
 end
 
-local SetSkin = function(Menu, skintable)
+local function SetSkin(Menu, skintable)
 	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
 	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", 1, skintable, function(id) ChangeSkin(id) end)
 	ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value())
 end
 
-local DrawDmgOnHPBar = function(Menu, Color, Text)
+local function DrawDmgOnHPBar(Menu, Color, Text)
 	local Dt = {}
 	for i = 1, C do
 		Menu:Menu("HPBar_"..Enemies[i].charName, "Draw Dmg HPBar "..Enemies[i].charName)
@@ -44,7 +44,7 @@ local DrawDmgOnHPBar = function(Menu, Color, Text)
 		return Dt
 end
 
-local GetLineFarmPosition2 = function(range, width, objects)
+local GetLineFarmPosition2 = function (range, width, objects)
 	local Pos, Hit = nil, 0
 	for _, m in pairs(objects) do
 		if ValidTarget(m, range) then
@@ -85,18 +85,18 @@ end)
 
 OnAnimation(function(u, a)
 	if (u ~= myHero or u.dead) then return end
-	if (Check[a]) then CCast = true
-	elseif (a:lower():find("attack")) then CCast = false end
+	if (Check[a]) then CCast = true return end
+	if (a:lower():find("attack")) then CCast = false return end
 end)
 
 OnProcessSpellAttack(function(u, a)
 	if (u ~= myHero or u.dead) then return end
-	if (a.name:lower():find("attack")) then CCast = false end
+	if (a.name:lower():find("attack")) then CCast = false return end
 end)
 
 OnProcessSpellComplete(function(u, a)
 	if (u ~= myHero or u.dead) then return end
-	if (a.name:lower():find("attack")) then CCast = true end
+	if (a.name:lower():find("attack")) then CCast = true return end
 end)
 
 --------------------------------------------------------------------------------
@@ -142,14 +142,8 @@ NS_Xe:Info("info", "Script Version: "..NEETSeries_Version)
 
 	--[[ Ultimate Menu ]]--
 	NS_Xe:Menu("ult", "Ultimate Settings")
-		NS_Xe.ult:DropDown("Pred", "Choose Prediction:", 1, pred, function(v) R.R1Prediction.Pred = pred[v] R.R2Prediction.Pred = pred[v] R.R3Prediction.Pred = pred[v] end)
+		NS_Xe.ult:DropDown("Pred", "Choose Prediction:", 1, pred, function(v) R.R1Prediction.Pred = pred[v] R.R2Prediction.Pred = pred[v] R.R3Prediction.Pred = pred[v] LoadGPred(v) end)
 		LoadGPred(NS_Xe.ult.Pred:Value())
-		NS_Xe.Q.Pred.callback = function(v)
-			R.R1Prediction.Pred = pred[v]
-			R.R2Prediction.Pred = pred[v]
-			R.R3Prediction.Pred = pred[v]
-			LoadGPred(v)
-		end
 		NS_Xe.ult:Menu("use", "Active Mode")
 			NS_Xe.ult.use:DropDown("mode", "Choose Your Mode:", 1, {"Press R", "Auto Use"}, function(v) if v == 2 then NS_Xe.ult.cast.mode:Value(v) end end)
 			NS_Xe.ult.use:Info("if1", "-- Press R: You Must PressR")
@@ -351,6 +345,7 @@ local function UpdateValues()
 
 	if IsReady(_Q) then Q.Draw2:Update("Range", Q.Range) end
 	if IsReady(_R) then R.Draw:Update("Range", R.Range()) end
+
 end
 
 local function ProcSpellCast(unit, spell)
@@ -546,7 +541,8 @@ local function Tick()
 	local QTarget = IsReady(_Q) and Q.Target:GetTarget()
 	local WTarget = IsReady(_W) and W.Target:GetTarget()
 	local ETarget = IsReady(_E) and E.Target:GetTarget()
-	if Mix:Mode() == "Combo" and CCast then
+	local mode = Mix:Mode()
+	if mode == "Combo" and CCast then
 		if (NS_Xe.misc.castCombo.WE:Value() and (IsReady(_W) or IsReady(_E))) or not NS_Xe.misc.castCombo.WE:Value() then
 			if NS_Xe.E.cb:Value() and NS_Xe.misc.E:Value() and ETarget then CastE(ETarget) end
 			if NS_Xe.W.cb:Value() and WTarget then CastW(WTarget) end
@@ -554,14 +550,14 @@ local function Tick()
 		end
 	end
 
-	if Mix:Mode() == "Harass" and CCast then
+	if mode == "Harass" and CCast then
 		if NS_Xe.E.hr:Value() and ManaCheck(NS_Xe.E.MPhr:Value()) and NS_Xe.misc.E:Value() and ETarget then CastE(ETarget) end
 		if NS_Xe.W.hr:Value() and ManaCheck(NS_Xe.W.MPhr:Value()) and WTarget then CastW(WTarget) end
 		if NS_Xe.Q.hr:Value() and ManaCheck(NS_Xe.Q.MPhr:Value()) and QTarget then CastQ(QTarget) end
 	end
-	if Mix:Mode() == "Harass" and IsReady(_Q) and Q.Charging and QTarget and not R.Activating then CastQ(QTarget) end
+	if mode == "Harass" and IsReady(_Q) and Q.Charging and QTarget and not R.Activating then CastQ(QTarget) end
 
-	if Mix:Mode() == "LaneClear" then
+	if mode == "LaneClear" then
 		Cr:Update()
 		if CCast then
 			LaneClear()
