@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.16
+--[[ NEET Series Version 0.17
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-NEETSeries_Version = 0.16
+NEETSeries_Version = 0.17
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -19,7 +19,7 @@ if not FileExist(COMMON_PATH.."OpenPredict.lua") or not FileExist(COMMON_PATH.."
 if not ChallengerCommonLoaded then require('ChallengerCommon') end
 if not Analytics then require("Analytics") end
 
-local SupTbl = {"Xerath"}
+local SupTbl = {"Xerath", "KogMaw", "Annie"}
 local Supported = Set(SupTbl)
 
 class "__MinionManager"
@@ -136,3 +136,17 @@ OnLoad(function()
 		end
 	end)
 end)
+
+--[[ -------------> Change log <-------------
+		{ Version 0.15 }
+			- Deleted support Annie, Kog'Maw, Katarina.
+			- Improve somethings
+			- Added escape for Xerath
+
+		{ Version 0.16 }
+			- Fixed somethings
+
+		{ Version 0.17 }
+			- Added Annie, Kog'Maw
+
+-------------------------------------------]]
