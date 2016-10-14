@@ -31,8 +31,8 @@ end
 
 local function SetSkin(Menu, skintable)
 	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
-	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", 1, skintable, function(id) ChangeSkin(id) end)
-	ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value())
+	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", #skintable, skintable, function(id) ChangeSkin(id) end)
+	if (Menu[myHero.charName.."_SetSkin"]:Value() ~= #skintable) then ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value()) end
 end
 
 local function DrawDmgOnHPBar(Menu, Color, Text)
@@ -105,7 +105,7 @@ local E = { Range = GetData(_E).range,                                 Speed = 1
 local R = { Range = function() return 900 + 300*GetData(_R).level end, Speed = huge,      Delay = 1,    Width = 235, Damage = function(unit) local bonus = GetPercentHP(unit) < 25 and 3 or (GetPercentHP(unit) >= 25 and GetPercentHP(unit) <= 50) and 2 or 1 return CalcDmg(2, unit, bonus*(30 + 40*GetData(_R).level + 0.25*myHero.ap)) end, Count = 1}
 local Cr, target, WRange = __MinionManager(E.Range, E.Range), nil, 0
 local function UpdateDelay(v)
-	if v == true then
+	if v then
 		Q.Prediction.data.hc = 0.125
 		E.Prediction.data.hc = 0.125
 		R.R1Prediction.data.hc = 0.875
@@ -210,7 +210,7 @@ end
 
 local function CastW()
 	if not target then return end
-	if (IsReady(_E) and ValidTarget(target, WRange)) or (IsReady(_E) == false and ValidTarget(target, 600 + 25*GetData(_W).level)) then CastSpell(_W) end
+	if (IsReady(_E) and ValidTarget(target, WRange)) or (not IsReady(_E) and ValidTarget(target, 600 + 25*GetData(_W).level)) then CastSpell(_W) end
 end
 
 local function CastQ(target)
@@ -295,7 +295,7 @@ local function Updating()
 			HPBar[i]:CheckValue()
 		end
 	end
-	if ((IsReady(_W) and EnemiesAround(myHero.pos, WRange) == 0) or (IsReady(_W) == false and EnemiesAround(myHero.pos, 565) == 0)) then Target.range = E.Range end
+	if ((IsReady(_W) and EnemiesAround(myHero.pos, WRange) == 0) or (not IsReady(_W) and EnemiesAround(myHero.pos, 565) == 0)) then Target.range = E.Range end
 	if IsReady(_R) then R.Draw:Update("Range", R.Range()) end
 	if IsReady(_W) then WDraw:Update("Range", WRange) end
 	Mix:ForceTarget(target)
