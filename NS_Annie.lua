@@ -1,11 +1,11 @@
 --[[ NEETSeries's plugin
-      __      _____  ___   _____  ___    __     _______  
-     /""\    (\"   \|"  \ (\"   \|"  \  |" \   /"     "| 
-    /    \   |.\\   \    ||.\\   \    | ||  | (: ______) 
-   /' /\  \  |: \.   \\  ||: \.   \\  | |:  |  \/    |   
-  //  __'  \ |.  \    \. ||.  \    \. | |.  |  // ___)_  
- /   /  \\  \|    \    \ ||    \    \ | /\  |\(:      "| 
-(___/    \___)\___|\____\) \___|\____\)(__\_|_)\_______) 
+	      __      _____  ___   _____  ___    __     _______  
+	     /""\    (\"   \|"  \ (\"   \|"  \  |" \   /"     "| 
+	    /    \   |.\\   \    ||.\\   \    | ||  | (: ______) 
+	   /' /\  \  |: \.   \\  ||: \.   \\  | |:  |  \/    |   
+	  //  __'  \ |.  \    \. ||.  \    \. | |.  |  // ___)_  
+	 /   /  \\  \|    \    \ ||    \    \ | /\  |\(:      "| 
+	(___/    \___)\___|\____\) \___|\____\)(__\_|_)\_______) 
 
 ---------------------------------------]]
 local Enemies, C, HPBar, CCast = { }, 0, { }, false
@@ -31,8 +31,8 @@ end
 
 local function SetSkin(Menu, skintable)
 	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
-	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", 1, skintable, function(id) ChangeSkin(id) end)
-	ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value())
+	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", #skintable, skintable, function(id) ChangeSkin(id) end)
+	if (Menu[myHero.charName.."_SetSkin"]:Value() ~= #skintable) then ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value()) end
 end
 
 local function DrawDmgOnHPBar(Menu, Color, Text)
@@ -211,7 +211,7 @@ end
 local function CheckR()
 	if NS_Annie.ult.u1:Value() == 1 then
 		local target = R.Target:GetTarget()
-		if ValidTarget(target, R.Range) and GetHP2(target) < R.Damage(target) and (IsReady(_Q) == false or (IsReady(_Q) and ValidTarget(target, Q.Range) and GetHP2(target) > Q.Damage(target))) and (IsReady(_W) == false or (IsReady(_W) and ValidTarget(target, W.Range) and GetHP2(target) > W.Damage(target))) then CastR(target) end
+		if ValidTarget(target, R.Range) and GetHP2(target) < R.Damage(target) and (not IsReady(_Q) or (IsReady(_Q) and ValidTarget(target, Q.Range) and GetHP2(target) > Q.Damage(target))) and (not IsReady(_W) or (IsReady(_W) and ValidTarget(target, W.Range) and GetHP2(target) > W.Damage(target))) then CastR(target) end
 	elseif NS_Annie.ult.u1:Value() == 2 then
 		local pos, hit = GetFarmPosition2(R.Width, R.Range, Enemies)
 		if hit >= NS_Annie.ult.u2:Value() then CastSkillShot(_R, pos) end
