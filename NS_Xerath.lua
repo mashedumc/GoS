@@ -31,8 +31,8 @@ end
 
 local function SetSkin(Menu, skintable)
 	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
-	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", 1, skintable, function(id) ChangeSkin(id) end)
-	ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value())
+	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", #skintable, skintable, function(id) ChangeSkin(id) end)
+	if (Menu[myHero.charName.."_SetSkin"]:Value() ~= #skintable) then ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value()) end
 end
 
 local function DrawDmgOnHPBar(Menu, Color, Text)
@@ -216,7 +216,7 @@ ChallengerInterrupter(NS_Xe.misc, function(o, s) if not ValidTarget(o, E.Range) 
 -----------------------------------
 
 local function CastR(target)
-	if target == nil or R.Count == 0 then return end
+	if not target or R.Count == 0 then return end
 	local RData = {
 		[3] = {
 			[3] = { delay = R.Delay1, menu = NS_Xe.misc.delay.c1:Value() },
@@ -275,9 +275,7 @@ local function GetRTarget(pos, range)
 	for i = 1, C do
 		local enemy = Enemies[i]
 		if ValidTarget(enemy, 2000 + 1200*GetData(_R).level) and GetDistanceSqr(pos, enemy.pos) <= range * range then
-			if RTarget == nil then
-				RTarget = enemy
-			elseif GetHP2(enemy) - R.Damage(enemy) * R.Count < GetHP2(RTarget) - R.Damage(RTarget) * R.Count then
+			if not RTarget or GetHP2(enemy) - R.Damage(enemy) * R.Count < GetHP2(RTarget) - R.Damage(RTarget) * R.Count then
 				RTarget = enemy
 			end
 		end
