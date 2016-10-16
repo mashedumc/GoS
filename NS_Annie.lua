@@ -14,7 +14,7 @@ local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
 local pred, StrID, StrN = {"OpenPredict", "GPrediction", "GosPrediction"}, {"cb", "hr", "lc", "jc", "ks", "lh"}, {"Combo", "Harass", "LaneClear", "JungleClear", "KillSteal", "LastHit"}
 local function GetData(spell) return myHero:GetSpellData(spell) end
-local function CalcDmg(type, target, dmg) local calc = type == 1 and CalcPhysicalDamage or CalcMagicalDamage return calc(myHero, target, dmg) end
+local function CalcDmg(type, target, dmg) if type == 1 then return CalcPhysicalDamage(myHero, target, dmg) end return CalcMagicalDamage(myHero, target, dmg) end
 local function IsSReady(spell) return CanUseSpell(myHero, spell) == 0 or CanUseSpell(myHero, spell) == 8 end
 local function ManaCheck(value) return value <= GetPercentMP(myHero) end
 local function EnemiesAround(pos, range) return CountObjectsNearPos(pos, nil, range, Enemies, MINION_ENEMY) end
@@ -107,7 +107,6 @@ local D = { Flash = MixLib:GetSlotByName("summonerflash", 4, 5), passive = GotBu
 local Cr = __MinionManager(Q.Range, Q.Range)
 
 local NS_Annie = MenuConfig("NS_Annie", "[NEET Series] - Annie")
-NS_Annie:Info("info", "Scripts Version: "..NEETSeries_Version)
 
 	--[[ Q Settings ]]--
 	AddMenu(NS_Annie, "Q", false, "Q Settings", {true, true, true, true, true, true}, 15)
@@ -351,6 +350,7 @@ local function Tick()
     end
 
     if mode == "LastHit" and CCast and IsReady(_Q) and ManaCheck(NS_Annie.Q.MPlh:Value()) and ((NS_Annie.Q.s3:Value() and not D.stun) or not NS_Annie.Q.s3:Value()) then
+    	Cr:Update()
 		for _, minion in pairs(Cr.tminion) do
 			QLastHit(minion)
 		end
