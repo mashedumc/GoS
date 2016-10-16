@@ -13,7 +13,7 @@ local huge, max, min = math.huge, math.max, math.min
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
 local pred, StrID, StrN = {"OpenPredict", "GPrediction", "GosPrediction"}, {"cb", "hr", "lc", "jc", "ks", "lh"}, {"Combo", "Harass", "LaneClear", "JungleClear", "KillSteal", "LastHit"}
 local function GetData(spell) return myHero:GetSpellData(spell) end
-local function CalcDmg(type, target, dmg) local calc = type == 1 and CalcPhysicalDamage or CalcMagicalDamage return calc(myHero, target, dmg) end
+local function CalcDmg(type, target, dmg) if type == 1 then return CalcPhysicalDamage(myHero, target, dmg) end return CalcMagicalDamage(myHero, target, dmg) end
 local function IsSReady(spell) return CanUseSpell(myHero, spell) == 0 or CanUseSpell(myHero, spell) == 8 end
 local function ManaCheck(value) return value <= GetPercentMP(myHero) end
 local function EnemiesAround(pos, range) return CountObjectsNearPos(pos, nil, range, Enemies, MINION_ENEMY) end
@@ -64,7 +64,6 @@ local Cr = __MinionManager(E.Range, E.Range)
 local WardCheck, target = Set({"SightWard", "VisionWard", "YellowTrinket"}), nil
 
 local NS_Kata = MenuConfig("NS_Katarina", "[NEET Series] - Katarina")
-NS_Kata:Info("info", "Scripts Version: "..NEETSeries_Version)
 
 	--[[ Q Settings ]]--
 	AddMenu(NS_Kata, "Q", false, "Q Settings", {true, true, true, true, true, true})
