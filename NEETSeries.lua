@@ -99,16 +99,16 @@ function PredictSpell:__init(Slot, Delay, Speed, Width, Range, Collision, collNu
 	self.Pred = predName
 	self.data = { slot = Slot, name = Name, speed = Speed, delay = Delay, range = Range, width = Width, collision = Collision, col = {"minion", "yasuowall"}, coll = collNum, aoe = Aoe, type = Type, hc = HitChance, angle = Angle, accel = Accel, minSpeed = Miin, maxSpeed = Max }
 	self.IPrediction = self.Pred == "IPrediction" and IPrediction.Prediction(self.data)
-	self.cshpbar2 = (Other and Other.hpbar2) and true or false
+	self.css2 = (Other and Other.s2) and true or false
 end
 
-function PredictSpell:Cast(target, CShpbar2Range)
+function PredictSpell:Cast(target, CSS2Range)
 	if not IsReady(self.data.slot) or not target then self.hc, self.pos = 0, nil return end
 	local HitChance, Pos, CanCast, Name = Mix:Predicting(self.Pred, target, self.data, self.IPrediction)
 	if CanCast and ((Name == "OpenPredict" and HitChance >= self.data.hc) or (Name == "IPrediction" and HitChance > 2) or (Name == "GoSPrediction" and HitChance >= 1) or (Name == "GPrediction" and HitChance > 1)) then
-		if not self.cshpbar2 and GetDistance(Pos) <= self.data.range then
+		if not self.css2 and GetDistance(Pos) <= self.data.range then
 			CastSkillShot(self.data.slot, Pos)
-		elseif self.cshpbar2 and GetDistance(Pos) <= CShpbar2Range then
+		elseif self.css2 and GetDistance(Pos) <= CSS2Range then
 			CastSkillShot2(self.data.slot, Pos)
 		end
 	end
