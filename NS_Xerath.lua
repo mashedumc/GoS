@@ -14,7 +14,7 @@ local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
 local pred, StrID, StrN = {"OpenPredict", "GPrediction", "GosPrediction"}, {"cb", "hr", "lc", "jc", "ks", "lh"}, {"Combo", "Harass", "LaneClear", "JungleClear", "KillSteal", "LastHit"}
 local function GetData(spell) return myHero:GetSpellData(spell) end
-local function CalcDmg(type, target, dmg) local calc = type == 1 and CalcPhysicalDamage or CalcMagicalDamage return calc(myHero, target, dmg) end
+local function CalcDmg(type, target, dmg) if type == 1 then return CalcPhysicalDamage(myHero, target, dmg) end return CalcMagicalDamage(myHero, target, dmg) end
 local function IsSReady(spell) return CanUseSpell(myHero, spell) == 0 or CanUseSpell(myHero, spell) == 8 end
 local function ManaCheck(value) return value <= GetPercentMP(myHero) end
 local function EnemiesAround(pos, range) return CountObjectsNearPos(pos, nil, range, Enemies, MINION_ENEMY) end
@@ -118,7 +118,6 @@ local function CanCast(t, target)
 end
 
 local NS_Xe = MenuConfig("NS_Xerath", "[NEET Series] - Xerath")
-NS_Xe:Info("info", "Script Version: "..NEETSeries_Version)
 
 	--[[ Q Settings ]]--
 	AddMenu(NS_Xe, "Q", true, "Q Settings", {true, true, true, true, true, false}, 15)
