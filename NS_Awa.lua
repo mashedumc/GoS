@@ -147,7 +147,7 @@ function NS_Awaraness:__init(Menu)
 	menu.NSAwa:Menu("cd", "Cooldown Tracker")
 	OnLoad(function()
 		for i, enemy in pairs(GetEnemyHeroes()) do
-			menu.NSAwa.cd:Boolean("cd_"..enemy.charName, "Track "..enemy.charName.."'s spells Cd", true)
+			menu.NSAwa.cd:Boolean("cd_"..enemy.charName, "Track "..enemy.charName, true)
 		end
 		menu.NSAwa:Info("ifo", "Script Version: "..NSAwa_Version)
 		if not Nothing then return end
