@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.096 ]]--
+--[[ Mix Lib Version 0.0965 ]]--
 
-local MixLibVersion = 0.096
+local MixLibVersion = 0.0965
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -93,7 +93,7 @@ end
 function MixLib:BlockAttack(boolean)
 	if attack_check == boolean or self.OW == "Disabled" then return end
 	attack_check = boolean
-	local boolean = not boolean
+	boolean = not boolean
 	if self.OW == "GoSWalk" then
 		GoSWalk:EnableAttack(boolean)
 	else
@@ -104,7 +104,7 @@ end
 function MixLib:BlockMovement(boolean)
 	if move_check == boolean or self.OW == "Disabled" then return end
 	move_check = boolean
-	local boolean = not boolean
+	boolean = not boolean
 	if self.OW == "GoSWalk" then
 		GoSWalk:EnableMovement(boolean)
 	else
@@ -181,7 +181,7 @@ end
 
 function MixLib:ForcePos(Pos)
 	if self.OW == "Disabled" then return end
-	local Pos = Pos and Vector(Pos) or nil
+	Pos = Pos and Vector(Pos) or nil
 	if self.OW == "GoSWalk" then
 		GoSWalk:ForceMovePoint(Pos)
 	else
