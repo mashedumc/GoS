@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.095 ]]--
+--[[ Mix Lib Version 0.096 ]]--
 
-local MixLibVersion = 0.095
+local MixLibVersion = 0.096
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -26,7 +26,7 @@ do
 			"https://raw.githubusercontent.com/KeVuong/GoS/master/Common/GPrediction.lua",
 			"https://raw.githubusercontent.com/DefinitelyRiot/PlatyGOS/master/Common/Item-Pi-brary.lua",
 			"https://raw.githubusercontent.com/LoggeL/GoS/master/Analytics.lua",
-			"https://raw.githubusercontent.com/Lonsemaria/Gos/master/Common/Krystralib.lua",
+			"https://raw.githubusercontent.com/Lonsemaria/Gos/master/Common/Krystralib.lua"
 		}
 	}
 	local c, t, fp = 0, {}, function(n) local s = n == 1 and "" or "s" Mix_Print(n.." file"..s.." need to be download. Please wait...") end
@@ -41,7 +41,7 @@ do
 		fp(c)
 		local ps = function(n) Mix_Print("("..n.."/"..c..") "..FilesCheck[1][t[n]]..". Don't Press F6!") end
 		local download = function(n) DownloadFileAsync(FilesCheck[2][t[n]], COMMON_PATH..FilesCheck[1][t[n]], function() ps(n) check(n+1) end) end
-		check = function(n) if n > c then Mix_Print("All file need have been downloaded. Please x2F6!") end DelayAction(function() download(n) end, 1.5) end
+		check = function(n) if n > c then Mix_Print("All file need have been downloaded. Please x2F6!") return end DelayAction(function() download(n) end, 1.5) end
 		DelayAction(function() download(1) end, 1.5)
 	end
 end
@@ -63,7 +63,7 @@ end)
 
 class "MixLib"
 function MixLib:__init()
-	self.OW = (OW == 2 and _G.IOW_Loaded) and "IOW" or (OW == 3 and _G.DAC_Loaded) and "DAC" or (OW == 4 and _G.PW_Loaded == true) and "PW" or (OW == 5 and _G.GoSWalkLoaded) and "GoSWalk" or (OW == 6 and _G.AutoCarry_Loaded) and "DACR" or _G.SLW and "SLW" or "Disabled"
+	self.OW = (OW == 2 and _G.IOW_Loaded) and "IOW" or (OW == 3 and _G.DAC_Loaded) and "DAC" or (OW == 4 and _G.PW_Loaded) and "PW" or (OW == 5 and _G.GoSWalkLoaded) and "GoSWalk" or (OW == 6 and _G.AutoCarry_Loaded) and "DACR" or _G.SLW and "SLW" or "Disabled"
 end
 
 function MixLib:PrintCurrOW()
@@ -114,7 +114,7 @@ function MixLib:BlockMovement(boolean)
 	BlockF7Dodge(true)
 end
 
-function MixLib:HealthPredict(unit, time, hpname)
+function MixLib:HealthPredict(unit, time, hpname) -- time[ms] | name["OW", "OP", "GoS"]
 	if hpname == "GoS" then
 		return unit.health - GetDamagePrediction(unit, time + GetLatency()*0.5)
 	end
@@ -181,7 +181,7 @@ end
 
 function MixLib:ForcePos(Pos)
 	if self.OW == "Disabled" then return end
-	local Pos = Vector(Pos)
+	local Pos = Pos and Vector(Pos) or nil
 	if self.OW == "GoSWalk" then
 		GoSWalk:ForceMovePoint(Pos)
 	else
