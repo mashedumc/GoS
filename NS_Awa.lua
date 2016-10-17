@@ -1,68 +1,38 @@
---[[ NS_Awa ver: 0.01
+--[[ NS_Awa ver: 0.02
 	Cooldown tracker only
 --]]
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
 if not DirExists(SPRITE_PATH.."NS_Awa\\Spells\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Spells\\") end
 if not DirExists(SPRITE_PATH.."NS_Awa\\Hud\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Hud\\") end
-local Nothing, NSAwa_Version = true, 0.01
+local NSAwa_Version = 0.02
 local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
-OnLoad(function()
-	local c, link, patch, check, dname = 0, { }, { }, { }, { }
-	if not FileExist(SPRITE_PATH.."NS_Awa\\Hud\\HPBar.png") then
-		c = c + 1
-		link[c] = "https://raw.githubusercontent.com/VTNEETS/GoS/master/NSAwa/Hud/HPBar.png"
-		patch[c] = SPRITE_PATH.."NS_Awa\\Hud\\HPBar.png"
-		Nothing = false
-		dname[c] = "HPBar.png"
-	end
-	if not FileExist(SPRITE_PATH.."NS_Awa\\Hud\\HPBar2.png") then
-		c = c + 1
-		link[c] = "https://raw.githubusercontent.com/VTNEETS/GoS/master/NSAwa/Hud/HPBar2.png"
-		patch[c] = SPRITE_PATH.."NS_Awa\\Hud\\HPBar2.png"
-		Nothing = false
-		dname[c] = "HPBar2.png"
-	end
-	if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\cd.png") then
-		c = c + 1
-		link[c] = "https://raw.githubusercontent.com/VTNEETS/GoS/master/NSAwa/Spells/cd.png"
-		patch[c] = SPRITE_PATH.."NS_Awa\\Spells\\cd.png"
-		Nothing = false
-		dname[c] = "cd.png"
-	end
-	for i, enemy in pairs(GetEnemyHeroes()) do
-		local NAME = enemy:GetSpellData(4).name:lower()
-		if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\"..NAME..".png") and not check[NAME] then
-			c = c + 1
-			link[c] = "https://raw.githubusercontent.com/VTNEETS/GoS/master/NSAwa/Spells/"..NAME..".png"
-			patch[c] = SPRITE_PATH.."NS_Awa\\Spells\\"..NAME..".png"
-			check[NAME] = true
-			Nothing = false
-			dname[c] = NAME..".png"
-		end
-		NAME = enemy:GetSpellData(5).name:lower()
-		if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\"..NAME..".png") and not check[NAME] then
-			c = c + 1
-			link[c] = "https://raw.githubusercontent.com/VTNEETS/GoS/master/NSAwa/Spells/"..NAME..".png"
-			patch[c] = SPRITE_PATH.."NS_Awa\\Spells\\"..NAME..".png"
-			check[NAME] = true
-			Nothing = false
-			dname[c] = NAME..".png"
-		end
-	end
+local Nothing, c, link, patch, dname, ch = true, 0, { }, { }, { }, { }
+local function addDownload(fd, name)
+	c = c + 1
+	link[c] = "https://raw.githubusercontent.com/VTNEETS/GoS/master/NSAwa/"..fd.."/"..name
+	patch[c] = SPRITE_PATH.."NS_Awa\\"..fd.."\\"..name
+	Nothing = false
+	dname[c] = name
+end
+
+local function NSdownloadSprites()
 	if c > 0 then
 		NSAwa_Print(c.." file"..(c > 1 and "s" or "").." need to be download. Please wait...")
 		local ps = function(n) NSAwa_Print("("..n.."/"..c..") "..dname[n]..". Don't Press F6!") end
-		local download = function(n) DownloadFileAsync(link[n], patch[n], function() ps(n) check(n+1) end) end
-		check = function(n) if n > c then NSAwa_Print("All file need have been downloaded. Please x2F6!") return end DelayAction(function() download(n) end, 1) end
+		local download = function(n) DownloadFileAsync(link[n], patch[n], function() ps(n) sc(n+1) end) end
+		sc = function(n) if n > c then NSAwa_Print("All file need have been downloaded. Please 2x F6!") return end DelayAction(function() download(n) end, 1) end
 		DelayAction(function() download(1) end, 1)
 	end
-end)
+end
 
 local hpbar1 = CreateSpriteFromFile("NS_Awa\\Hud\\HPBar.png", 1)
 local hpbar2 = CreateSpriteFromFile("NS_Awa\\Hud\\HPBar2.png", 1)
 local dfcd   = CreateSpriteFromFile("NS_Awa\\Spells\\cd.png", 1)
+if hpbar1 == 0 then addDownload("Hud", "HPBar.png") end
+if hpbar2 == 0 then addDownload("Hud", "HPBar2.png") end
+if dfcd   == 0 then addDownload("Spells", "cd.png") end
 local CoolDown = { }
 local menu = nil
 
@@ -84,11 +54,6 @@ local fixb2 = {
 }
 
 local function Load()
-	for i, enemy in pairs(GetEnemyHeroes()) do
-		sumDF[1][i] = CreateSpriteFromFile("NS_Awa\\Spells\\"..GetCastName(enemy, 4):lower()..".png", 1)
-		sumDF[2][i] = CreateSpriteFromFile("NS_Awa\\Spells\\"..GetCastName(enemy, 5):lower()..".png", 1)
-	end
-
 	OnUnLoad(function()
 		ReleaseSprite(hpbar1)
 		ReleaseSprite(hpbar2)
@@ -100,7 +65,7 @@ local function Load()
 
 	OnDraw(function()
 		for i, enemy in pairs(GetEnemyHeroes()) do
-			if not enemy.dead and enemy.visible and menu.NSAwa.cd["cd_"..enemy.charName]:Value() then
+			if not enemy.dead and enemy.visible and menu.cd["cd_"..enemy.charName]:Value() then
 				local bar = GetHPBarPos(enemy)
 				if bar.x > 0 and bar.y > 0 then
 					local posX1 = bar.x + (fixb2[enemy.charName] and fixb2[enemy.charName].x or fixb2.Other.x)
@@ -143,13 +108,23 @@ end
 class "NS_Awaraness"
 function NS_Awaraness:__init(Menu)
 	menu = Menu
-	menu:Menu("NSAwa", "NS_Awaraness")
-	menu.NSAwa:Menu("cd", "Cooldown Tracker")
+	menu:Menu("cd", "Cooldown Tracker")
 	OnLoad(function()
 		for i, enemy in pairs(GetEnemyHeroes()) do
-			menu.NSAwa.cd:Boolean("cd_"..enemy.charName, "Track "..enemy.charName, true)
+			menu.cd:Boolean("cd_"..enemy.charName, "Track "..enemy.charName, true)
+			sumDF[1][i] = CreateSpriteFromFile("NS_Awa\\Spells\\"..GetCastName(enemy, 4):lower()..".png", 1)
+			sumDF[2][i] = CreateSpriteFromFile("NS_Awa\\Spells\\"..GetCastName(enemy, 5):lower()..".png", 1)
+			if sumDF[1][i] == 0 and not ch[GetCastName(enemy, 4)] then
+				addDownload("Spells", GetCastName(enemy, 4):lower()..".png")
+				ch[GetCastName(enemy, 4)] = true
+			end
+			if sumDF[2][i] == 0 and not ch[GetCastName(enemy, 5)] then
+				addDownload("Spells", GetCastName(enemy, 5):lower()..".png")
+				ch[GetCastName(enemy, 5)] = true
+			end
 		end
-		menu.NSAwa:Info("ifo", "Script Version: "..NSAwa_Version)
+		menu:Info("ifo", "[NS Awaraness] Version: "..NSAwa_Version)
+		NSdownloadSprites()
 		if not Nothing then return end
 		Load()
 	end)
