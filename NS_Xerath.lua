@@ -260,12 +260,12 @@ local function CastQ(target)
 end
 
 local function CastW(target)
-	if not IsReady(_W) or not ValidTarget(target, W.Range + 80) or not CanCast("E", target) or os.clock() - Q.LastCastTime < 0.2 then return end
+	if not IsReady(_W) or not ValidTarget(target, W.Range + 80) or not CanCast("E", target) or os.clock() - Q.LastCastTime < 0.2 or os.clock() - E.LastCastTime < 0.3 then return end
 		W.Prediction:Cast(target)
 end
 
 local function CastE(target)
-	if not IsReady(_E) or not ValidTarget(target, E.Range + 50) or not CanCast("W", target) or os.clock() - Q.LastCastTime < 0.2 then return end
+	if not IsReady(_E) or not ValidTarget(target, E.Range + 50) or not CanCast("W", target) or os.clock() - Q.LastCastTime < 0.2 or os.clock() - W.LastCastTime < 0.3 then return end
 		E.Prediction:Cast(target)
 end
 
@@ -417,7 +417,7 @@ local function CreateObj(obj)
 		EObj = obj
 	end
 
-	if obj.team == myHero.team and obj.name == "Xerath_Base_W_aoe_green.troy" then
+	if obj.team == myHero.team and obj.name:find("Xerath_Base_W_aoe") then
 		WObj = obj
 	end
 end
@@ -427,7 +427,7 @@ local function DeleteObj(obj)
 		EObj = nil
 	end
 
-	if obj.team == myHero.team and obj.name == "Xerath_Base_W_aoe_green.troy" then
+	if obj.team == myHero.team and obj.name:find("Xerath_Base_W_aoe") then
 		WObj = nil
 	end
 end
@@ -535,9 +535,10 @@ local function Tick()
 	if myHero.dead or not Enemies[C] then return end
 	UpdateValues()
 	if R.Activating then return end
-	local QTarget = IsReady(_Q) and Q.Target:GetTarget()
-	local WTarget = IsReady(_W) and W.Target:GetTarget()
-	local ETarget = IsReady(_E) and E.Target:GetTarget()
+	local QTarget, WTarget, ETarget = nil, nil, nil
+	if IsReady(_Q) then QTarget = Q.Target:GetTarget() end
+	if IsReady(_W) then WTarget = W.Target:GetTarget() end
+	if IsReady(_E) then ETarget = E.Target:GetTarget() end
 	local mode = Mix:Mode()
 	if mode == "Combo" and CCast then
 		if (NS_Xe.misc.castCombo.WE:Value() and (IsReady(_W) or IsReady(_E))) or not NS_Xe.misc.castCombo.WE:Value() then
