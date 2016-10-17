@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.19
+--[[ NEET Series Version 0.2
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-local NEETSeries_Version = 0.19
+local NEETSeries_Version = 0.2
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -23,12 +23,12 @@ local SupTbl = {"Xerath", "KogMaw", "Annie", "Katarina"}
 local Supported = Set(SupTbl)
 
 local NS_Menu = MenuConfig("NEETSeries", "[NEET Series]: Menu")
-	NS_Menu:Boolean("Tracker", "Load Tracker", true, function(v) NEETSeries_Print("Please 2x F6 to "..(v == true and "Load" or "UnLoad").." Tracker") end)
+	NS_Menu:Boolean("Tracker", "Load Tracker", true, function(v) NEETSeries_Print("Please 2x F6 to "..(v == true and "Load" or "UnLoad").." NS_Awa") end)
 	if Supported[myHero.charName] then NS_Menu:Boolean("Plugin", "Load NS_"..myHero.charName, true, function(v) NEETSeries_Print("Please 2x F6 to "..(v == true and "Load" or "UnLoad").." NS_"..myHero.charName) end)
 	else NS_Menu:Info("nope", "Not supported for "..myHero.charName) end
 	NS_Menu:Info("ifo", "Current Orbwalker: "..Mix.OW)
 	NS_Menu:Info("ifo2", "Script Version: "..NEETSeries_Version)
-	NS_Menu:Info("ifo3", "Your LoL Version: "..GetGameVersion():sub(1, 13))
+	NS_Menu:Info("ifo3", "LoL Version: "..GetGameVersion():sub(1, 13))
 
 class "__MinionManager"
 function __MinionManager:__init(range1, range2)
@@ -122,8 +122,9 @@ end
 
 do
 	if NS_Menu.Tracker:Value() and FileExist(COMMON_PATH.."NS_Awa.lua") then
+		NS_Menu:Menu("NSAwa", "NS Awaraness")
 		require("NS_Awa")
-		NS_Awaraness(NS_Menu)
+		NS_Awaraness(NS_Menu.NSAwa)
 	end
 end
 
@@ -175,5 +176,8 @@ end)
 
 		{ Version 0.19 }
 			- Added Tracker (cooldown tracker only)
+
+		{ Version 0.2 }
+			- Fixed somethings (cooldown tracker only)
 
 -------------------------------------------]]
