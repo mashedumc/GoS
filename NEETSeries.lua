@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.2
+--[[ NEET Series Version 0.21
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-local NEETSeries_Version = 0.2
+local NEETSeries_Version = 0.21
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -137,7 +137,7 @@ do
 	else
 		if NS_Menu.Plugin:Value() then require("NS_"..myHero.charName) end
 	end
-	Analytics("NEETSeries", "Ryzuki", true)
+	--Analytics("NEETSeries", "Ryzuki", true)
 end
 
 function NS_updateP(v, Ver)
@@ -145,6 +145,7 @@ function NS_updateP(v, Ver)
 	if v > #SupTbl then NEETSeries_Print("Updated to version "..Ver..". Please F6 x2 to reload.") return end
 	DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..(SupTbl[v])..".lua", COMMON_PATH.."NS_"..(SupTbl[v])..".lua", function() NS_updateP(v + 1, Ver) return end) return
 end
+
 
 OnLoad(function()
 	GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NEETSeries.version", function(OnlineVer)
@@ -178,6 +179,9 @@ end)
 			- Added Tracker (cooldown tracker only)
 
 		{ Version 0.2 }
-			- Fixed somethings (cooldown tracker only)
+			- Fixed somethings
+
+		{ Version 0.21 }
+			- Fixed somethings, Added cd tracker for allies
 
 -------------------------------------------]]
