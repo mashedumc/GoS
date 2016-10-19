@@ -1,12 +1,13 @@
---[[ NS_Awa ver: 0.03
+--[[ NS_Awa ver: 0.04
 	Cooldown tracker only
 --]]
+
+local NSAwa_Version = 0.04
+local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
 if not DirExists(SPRITE_PATH.."NS_Awa\\Spells\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Spells\\") end
 if not DirExists(SPRITE_PATH.."NS_Awa\\Hud\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Hud\\") end
-local NSAwa_Version = 0.03
-local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 local Nothing, c, link, patch, dname, ch = true, 0, { }, { }, { }, { }
 local function addToDownload(fd, name)
@@ -71,7 +72,7 @@ local function Load()
 			end
 		end
 
-		for i, ally in pairs(GetEnemyHeroes()) do
+		for i, ally in pairs(GetAllyHeroes()) do
 			local NAME = ally:GetSpellData(4).name:lower()
 			if sumDF[NAME] > 0 then
 				ReleaseSprite(sumDF[NAME])
@@ -226,6 +227,14 @@ function NS_Awaraness:__init(Menu)
 				if sumDF[NAME] == nil then
 					sumDF[NAME] = CreateSpriteFromFile("NS_Awa\\Spells\\"..NAME..".png", 1)
 				end
+			end
+		end
+
+		if mapID == 12 then
+			if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\snowballfollowupcast.png") then
+				addToDownload("Spells", "snowballfollowupcast.png")
+			else
+				sumDF["snowballfollowupcast"] = CreateSpriteFromFile("NS_Awa\\Spells\\snowballfollowupcast.png", 1)
 			end
 		end
 
