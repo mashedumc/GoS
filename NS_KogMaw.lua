@@ -340,7 +340,7 @@ local function Tick()
 	target = Target:GetTarget()
 	local mode = Mix:Mode()
 
-	if target and mode == "Combo" and NS_Kog.misc.sme.b1:Value() and 0.625*myHero.attackSpeed >= NS_Kog.misc.sme.b2:Value() 
+	if target and mode == "Combo" and NS_Kog.misc.sme.b1:Value() and 0.625*myHero.attackSpeed >= NS_Kog.misc.sme.b2:Value() then
 		if EnemiesAround(myHero.pos, 300) > 0 or (GetDistance(target) >= 300 and GetDistance(target) <= myHero.range - 85) then
 			Mix:BlockMovement(true)
 		else
