@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.215
+--[[ NEET Series Version 0.22
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-local NEETSeries_Version = 0.215
+local NEETSeries_Version = 0.22
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -128,22 +128,10 @@ do
 	end
 end
 
-do
-	if not Supported[myHero.charName] then NEETSeries_Print("Not Supported For "..myHero.charName) return end
-	if not FileExist(COMMON_PATH.."NS_"..myHero.charName..".lua") then
-		NEETSeries_Print("Downloading NS_"..myHero.charName..".lua. Please wait...")
-		DelayAction(function() DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..myHero.charName..".lua", COMMON_PATH.."NS_"..myHero.charName..".lua", function() NEETSeries_Print("Downloaded plugin NS_"..myHero.charName..".lua, please 2x F6!") return end) end, 1)
-		return
-	else
-		if NS_Menu.Plugin:Value() then require("NS_"..myHero.charName) end
-	end
-	--Analytics("NEETSeries", "Ryzuki", true)
-end
-
 function NS_updateP(v, Ver)
 	if v <= #SupTbl and not FileExist(COMMON_PATH.."NS_"..SupTbl[v]..".lua") then NS_updateP(v + 1, Ver) return end
 	if v > #SupTbl then NEETSeries_Print("Updated to version "..Ver..". Please F6 x2 to reload.") return end
-	DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..(SupTbl[v])..".lua", COMMON_PATH.."NS_"..(SupTbl[v])..".lua", function() NS_updateP(v + 1, Ver) return end) return
+	DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..SupTbl[v]..".lua", COMMON_PATH.."NS_"..SupTbl[v]..".lua", function() NS_updateP(v + 1, Ver) return end) return
 end
 
 
@@ -159,6 +147,18 @@ OnLoad(function()
 		end
 	end)
 end)
+
+do
+	if not Supported[myHero.charName] then NEETSeries_Print("Not Supported For "..myHero.charName) return end
+	if not FileExist(COMMON_PATH.."NS_"..myHero.charName..".lua") then
+		NEETSeries_Print("Downloading NS_"..myHero.charName..".lua. Please wait...")
+		DelayAction(function() DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_"..myHero.charName..".lua", COMMON_PATH.."NS_"..myHero.charName..".lua", function() NEETSeries_Print("Downloaded plugin NS_"..myHero.charName..".lua, please 2x F6!") return end) end, 1)
+		return
+	else
+		if NS_Menu.Plugin:Value() then require("NS_"..myHero.charName) end
+	end
+	--Analytics("NEETSeries", "Ryzuki", true)
+end
 
 --[[ -------------> Change log <-------------
 		{ Version 0.15 }
@@ -183,5 +183,8 @@ end)
 
 		{ Version 0.21 }
 			- Fixed somethings, Added cd tracker for allies
+
+		{ Version 0.22 }
+			- Fixed Kog'Maw RDmg, Added RecallTracker and MinimapTrack
 
 -------------------------------------------]]
