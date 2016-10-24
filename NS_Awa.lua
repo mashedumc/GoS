@@ -1,14 +1,16 @@
---[[ NS_Awa ver: 0.05
+--[[ NS_Awa ver: 0.06
 	Cooldown tracker
 	Recall tracker
+	Minimap Track
 --]]
 
-local NSAwa_Version = 0.05
+local NSAwa_Version = 0.06
 local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
 if not DirExists(SPRITE_PATH.."NS_Awa\\Spells\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Spells\\") end
 if not DirExists(SPRITE_PATH.."NS_Awa\\Hud\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Hud\\") end
+if not DirExists(SPRITE_PATH.."NS_Awa\\Champions\\") then CreateDir(SPRITE_PATH.."NS_Awa\\Champions\\") end
 
 local Nothing, c, link, patch, dname, ch = true, 0, { }, { }, { }, { }
 local function addToDownload(fd, name)
@@ -40,11 +42,16 @@ do
 	if dfcd == 0 then addToDownload("Spells", "cd.png") end
 end
 
-local CoolDown, recall = { }, { }
-local menu = nil
+local CoolDown, recall, champ, sumDF, last = { }, { }, { }, { { }, { } }, { t = { }, p = { } }
+local menu, cMove, bPos = nil, false, nil
 
-local sumDF = { { }, { } }
-local cMove = false
+if mapID == SUMMONERS_RIFT then
+	basePos = myHero.team == 100 and Vector(14300, 171, 14380) or Vector(410, 182, 420)
+elseif mapID == TWISTED_TREELINE then
+	basePos = myHero.team == 100 and Vector(14300, 171, 14380) or Vector(410, 182, 420)
+elseif mapID == CRYSTAL_SCAR then
+	basePos = myHero.team == 100 and Vector(14300, 171, 14380) or Vector(410, 182, 420)
+end	
 
 local fixbar = {
 	["Annie"] = { x = 8, y = 7.5, x2 = 122, y2 = -20 },
@@ -141,7 +148,7 @@ local function CoolDownTracker()
 end
 
 local function RecallTracker()
-	if (#recall > 0 or menu.rc.cm:Value()) and cMove and CursorIsUnder(menu.rc.px:Value()-15, menu.rc.py:Value()-20, 345, 33) then
+	if menu.rc.cm:Value() and cMove and CursorIsUnder(menu.rc.px:Value()-15, menu.rc.py:Value()-20, 345, 33) then
 		menu.rc.px.value = GetCursorPos().x - 330/2
 		menu.rc.py.value = GetCursorPos().y
 	end
@@ -162,11 +169,29 @@ local function RecallTracker()
 	end
 end
 
+local function MinimapTrack()
+	for i, enemy in pairs(GetEnemyHeroes()) do
+		if menu.mm[enemy.charName]:Value() and not enemy.visible and not enemy.dead then
+			local pos = WorldToMinimap(last.p[enemy.networkID])
+			DrawSprite(champ[i], pos.x - 10.8, pos.y - 10.8, 0, 0, 21.6, 21.6, GoS.White)
+			local time = os.clock() - last.t[enemy.networkID]
+			local mp = math.min(4001, enemy.ms*time)
+			if mp < 4800 then DrawCircleMinimap(last.p[enemy.networkID], mp, 1, 255, 0x9000F5FF) end
+			if time < 60 then
+				DrawText(string.format("%2d", time), 12, pos.x - 7.5, pos.y + 5, GoS.White)
+			else
+				DrawText(string.format("%2d:%02d", time/60, time%60), 12, pos.x - 14, pos.y + 5, GoS.White)
+			end
+		end
+	end
+end
+
 local function Load()
 	OnUnLoad(function()
-		ReleaseSprite(hpbar1)
-		ReleaseSprite(hpbar2)
-		ReleaseSprite(dfcd)
+		if hpbar1 > 0 then ReleaseSprite(hpbar1) end
+		if hpbar2 > 0 then ReleaseSprite(hpbar2) end
+		if dfcd > 0 then ReleaseSprite(dfcd) end
+		if rcbar > 0 then ReleaseSprite(rcbar) end
 
 		for i, enemy in pairs(GetEnemyHeroes()) do
 			local NAME = enemy:GetSpellData(4).name:lower()
@@ -174,11 +199,13 @@ local function Load()
 				ReleaseSprite(sumDF[NAME])
 				sumDF[NAME] = 0
 			end
-			local NAME = enemy:GetSpellData(5).name:lower()
+			NAME = enemy:GetSpellData(5).name:lower()
 			if sumDF[NAME] > 0 then
 				ReleaseSprite(sumDF[NAME])
 				sumDF[NAME] = 0
 			end
+
+			if champ[i] > 0 then ReleaseSprite(champ[i]) end
 		end
 
 		for i, ally in pairs(GetAllyHeroes()) do
@@ -187,7 +214,7 @@ local function Load()
 				ReleaseSprite(sumDF[NAME])
 				sumDF[NAME] = 0
 			end
-			local NAME = ally:GetSpellData(5).name:lower()
+			NAME = ally:GetSpellData(5).name:lower()
 			if sumDF[NAME] > 0 then
 				ReleaseSprite(sumDF[NAME])
 				sumDF[NAME] = 0
@@ -196,9 +223,9 @@ local function Load()
 	end)
 
 	OnWndMsg(function(msg, key)
-		if msg == 513 and key == 0 then
+		if msg == 513 then
 			cMove = true
-		elseif msg == 514 and key == 1 then
+		elseif msg == 514 then
 			cMove = false
 		end
 	end)
@@ -206,15 +233,16 @@ local function Load()
 	OnProcessRecall(function(unit, rec)
 		if unit.team == myHero.team then return end
 		if rec.isStart then
-			recall[#recall + 1] = { unit = unit, sT = os.clock(), fT = rec.totalTime*0.001, color = function(i) if rec.totalTime <= 4 then return ARGB(270 - 45*i, 181, 19, 210) end return ARGB(270 - 45*i, 255, 255, 255) end }
+			recall[#recall + 1] = { unit = unit, sT = os.clock(), fT = rec.totalTime*0.001, color = function(i) if rec.totalTime <= 4 then return ARGB(280 - 45*i, 181, 19, 210) end return ARGB(280 - 45*i, 255, 255, 255) end }
 		else
+			if rec.isFinish or (rec.totalTime <= 4 and rec.passedTime >= 3940 or rec.passedTime >= 7940) then last.p[unit.networkID] = basePos end
 			for i = 1, #recall do
 				if recall[i].unit.networkID == unit.networkID then
 					if rec.isFinish or (rec.totalTime <= 4 and rec.passedTime >= 3940 or rec.passedTime >= 7940) then
 						table.remove(recall, i)
 					else
 						recall[i].stopT = os.clock() + 0.35
-						recall[i].color = function(i) if rec.totalTime <= 4 then return ARGB(270 - 45*i, 159, 11, 196) end return ARGB(270 - 45*i, 208, 198, 198) end
+						recall[i].color = function(i) if rec.totalTime <= 4 then return ARGB(280 - 45*i, 159, 11, 196) end return ARGB(280 - 45*i, 208, 198, 198) end
 					end
 					break
 				end
@@ -222,10 +250,19 @@ local function Load()
 		end
 	end)
 
+	OnLoseVision(function(unit)
+		if unit.type == "AIHeroClient" and unit.team ~= myHero.team then
+			last.t[unit.networkID] = os.clock()
+			last.p[unit.networkID] = not unit.dead and Vector(unit.pos) or basePos
+		end
+	end)
+
 	OnDraw(function()
 		CoolDownTracker()
 		if menu.rc.on:Value() then RecallTracker() end
 	end)
+
+	OnDrawMinimap(function() MinimapTrack() end)
 end
 
 class "NS_Awaraness"
@@ -239,9 +276,11 @@ function NS_Awaraness:__init(Menu)
 		menu.rc:Boolean("cm", "Move recall bar", false)
 		menu.rc:Slider("px", "Horizontal", GetResolution().x/2.8, 1, GetResolution().x, 0.001)
 		menu.rc:Slider("py", "Vertical", GetResolution().y/1.5, 1, GetResolution().y, 0.001)
+	menu:Menu("mm", "Track Minimap")
 	OnLoad(function()
 		for i, enemy in pairs(GetEnemyHeroes()) do
 			menu.cd.e:Boolean("cd_"..enemy.charName, "Track "..enemy.charName, true)
+			menu.mm:Boolean(enemy.charName, "Track "..enemy.charName, true)
 
 			local NAME = enemy:GetSpellData(4).name:lower()
 			if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\"..NAME..".png") then
@@ -266,6 +305,11 @@ function NS_Awaraness:__init(Menu)
 					sumDF[NAME] = CreateSpriteFromFile("NS_Awa\\Spells\\"..NAME..".png", 1)
 				end
 			end
+
+			champ[i] = CreateSpriteFromFile("NS_Awa\\Champions\\"..enemy.charName..".png", 0.4)
+			if champ[i] == 0 then addToDownload("Champions", enemy.charName..".png") end
+			last.t[enemy.networkID] = os.clock()
+			last.p[enemy.networkID] = Vector(enemy.pos)
 		end
 
 		for i, ally in pairs(GetAllyHeroes()) do
@@ -298,9 +342,21 @@ function NS_Awaraness:__init(Menu)
 
 		if mapID == 12 then
 			if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\snowballfollowupcast.png") then
-				addToDownload("Spells", "snowballfollowupcast.png")
+				if not ch["snowballfollowupcast"] then
+					addToDownload("Spells", "snowballfollowupcast.png")
+					ch["snowballfollowupcast"] = true
+				end
 			else
 				sumDF["snowballfollowupcast"] = CreateSpriteFromFile("NS_Awa\\Spells\\snowballfollowupcast.png", 1)
+			end
+
+			if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\summonersnowball.png") then
+				if not ch["summonersnowball"] then
+					addToDownload("Spells", "summonersnowball.png")
+					ch["summonersnowball"] = true
+				end
+			else
+				sumDF["summonersnowball"] = CreateSpriteFromFile("NS_Awa\\Spells\\summonersnowball.png", 1)
 			end
 		end
 
@@ -312,6 +368,7 @@ function NS_Awaraness:__init(Menu)
 end
 
 OnLoad(function()
+	if not Nothing then return end
 	GetWebResultAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/NS_Awa.version", function(OnlineVer)
 		if tonumber(OnlineVer) > NSAwa_Version then
 			NSAwa_Print("New Version found (v"..OnlineVer.."). Please wait...")
