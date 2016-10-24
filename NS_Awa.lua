@@ -1,10 +1,10 @@
---[[ NS_Awa ver: 0.07
+--[[ NS_Awa ver: 0.08
 	Cooldown tracker
 	Recall tracker
 	Minimap Track
 --]]
 
-local NSAwa_Version = 0.07
+local NSAwa_Version = 0.08
 local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
@@ -180,9 +180,10 @@ local function MinimapTrack()
 			local mp = math.min(4001, enemy.ms*time)
 			if mp < 4800 then DrawCircleMinimap(last.p[enemy.networkID], mp, 1, 255, 0x9000F5FF) end
 			if time < 60 then
-				DrawText(string.format("%2d", time), 12, pos.x - 7.5, pos.y + 5, GoS.White)
+				DrawText(string.format("%2d", math.floor(time)), 12, pos.x - 7.5, pos.y + 5, GoS.White)
 			else
-				DrawText(string.format("%2d:%02d", time/60, time%60), 12, pos.x - 14, pos.y + 5, GoS.White)
+				local uiTime = math.floor(time)
+				DrawText(string.format("%2d:%02d", uiTime/60, uiTime%60), 12, pos.x - 14, pos.y + 5, GoS.White)
 			end
 		end
 	end
