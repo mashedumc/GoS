@@ -8,8 +8,8 @@
 	(__|  \__)\"_____/   \_______)       |___|\__/|___|(___/    \___)|___/    \___|
 
 ---------------------------------------]]
-local Enemies, C, HPBar, CCast = { }, 0, { }, false
-local huge, max, min = math.huge, math.max, math.min
+local Enemies, C, HPBar, CCast = { }, 0, { }, true
+local huge, min = math.huge, math.min
 local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
 local pred, StrID, StrN = {"OpenPredict", "GPrediction", "GosPrediction"}, {"cb", "hr", "lc", "jc", "ks", "lh"}, {"Combo", "Harass", "LaneClear", "JungleClear", "KillSteal", "LastHit"}
@@ -84,25 +84,25 @@ OnLoad(function()
 end)
 
 OnAnimation(function(u, a)
-	if (u ~= myHero or u.dead) then return end
-	if (Check[a]) then CCast = true return end
-	if (a:lower():find("attack")) then CCast = false return end
+	if u ~= myHero or u.dead then return end
+	if Check[a] then CCast = true return end
+	if a:lower():find("attack") then CCast = false return end
 end)
 
 OnProcessSpellAttack(function(u, a)
-	if (u ~= myHero or u.dead) then return end
-	if (a.name:lower():find("attack")) then CCast = false return end
+	if u ~= myHero or u.dead then return end
+	if a.name:lower():find("attack") then CCast = false return end
 end)
 
 OnProcessSpellComplete(function(u, a)
-	if (u ~= myHero or u.dead) then return end
-	if (a.name:lower():find("attack")) then CCast = true return end
+	if u ~= myHero or u.dead then return end
+	if a.name:lower():find("attack") then CCast = true return end
 end)
 
 --------------------------------------------------------------------------------
 local Q = { Range = GetData(_Q).range,                                 Speed = 1450,      Delay = 0.25, Width = 80,  Damage = function(unit) return CalcDmg(2, unit, 30 + 50*GetData(_Q).level + 0.5*myHero.ap) end}
 local E = { Range = GetData(_E).range,                                 Speed = 1100,      Delay = 0.25, Width = 120, Damage = function(unit) return CalcDmg(2, unit, 10 + 50*GetData(_E).level + 0.7*myHero.ap) end}
-local R = { Range = function() return 900 + 300*GetData(_R).level end, Speed = huge,      Delay = 1,    Width = 235, Damage = function(unit) local bonus = GetPercentHP(unit) < 25 and 3 or (GetPercentHP(unit) >= 25 and GetPercentHP(unit) <= 50) and 2 or 1 return CalcDmg(2, unit, bonus*(30 + 40*GetData(_R).level + 0.25*myHero.ap)) end, Count = 1}
+local R = { Range = function() return 900 + 300*GetData(_R).level end, Speed = huge,      Delay = 1,    Width = 235, Damage = function(unit) local bonus = GetPercentHP(unit) < 40 and 2 or (1 + min(0.5, (100 - GetPercentHP(unit))*0.0083)) return CalcDmg(2, unit, bonus*(60 + 40*GetData(_R).level + 0.25*myHero.ap + 0.65*myHero.totalDamage)) end, Count = 1}
 local Cr, target, WRange = __MinionManager(E.Range, E.Range), nil, 0
 local function UpdateDelay(v)
 	if v then
@@ -162,6 +162,7 @@ local NS_Kog = MenuConfig("NS_KogMaw", "[NEET Series] - Kog'Maw")
 		NS_Kog.misc:Menu("rc", "Request Casting R")
 			NS_Kog.misc.rc:Boolean("R1", "R but save mana for W", true)
 			NS_Kog.misc.rc:Slider("R2", "Cast R if Stacks < x", 5, 1, 10, 1)
+			NS_Kog.misc.rc:Slider("R3", "R in Combo if %MP >= ", 10, 1, 100, 1)
 		NS_Kog.misc:Menu("hc", "Spell HitChance")
 			NS_Kog.misc.hc:Slider("Q", "Q Hit-Chance", 25, 1, 100, 1, function(value) Q.Prediction.data.hc = value*0.01 end)
 			NS_Kog.misc.hc:Slider("E", "E Hit-Chance", 25, 1, 100, 1, function(value) E.Prediction.data.hc = value*0.01 end)
@@ -243,7 +244,7 @@ local function LaneClear()
 	if IsReady(_R) and NS_Kog.R.lc:Value() and ManaCheck(NS_Kog.R.MPlc:Value()) then
 		if NS_Kog.misc.rc.R2:Value() <= R.Count then return end
 		if NS_Kog.R.ec:Value() and EnemiesAround(myHero.pos, 1200) > 0 then return end
-		if NS_Kog.misc.rc.R1:Value() and myHero.mana - 50*R.Count < 40 then return end
+		if NS_Kog.misc.rc.R1:Value() and myHero.mana - 40*R.Count < 40 then return end
 		local RPos, RHit = GetFarmPosition2(R.Range(), R.Width, Cr.tminion)
 		if RHit >= NS_Kog.R.h:Value() then CastSkillShot(_R, RPos) end
     end
@@ -262,7 +263,7 @@ local function JungleClear()
 	if IsReady(_E) and NS_Kog.E.jc:Value() and ManaCheck(NS_Kog.E.MPjc:Value()) then
 		CastSkillShot(_E, Vector(mob))
 	end
-	if IsReady(_R) and NS_Kog.R.jc:Value() and ManaCheck(NS_Kog.R.MPjc:Value()) and ValidTarget(mob, R.Range()) and NS_Kog.misc.rc.R2:Value() > R.Count and ((NS_Kog.misc.rc.R1:Value() and myHero.mana - 50*R.Count > 40) or not NS_Kog.misc.rc.R1:Value()) then
+	if IsReady(_R) and NS_Kog.R.jc:Value() and ManaCheck(NS_Kog.R.MPjc:Value()) and ValidTarget(mob, R.Range()) and NS_Kog.misc.rc.R2:Value() > R.Count and ((NS_Kog.misc.rc.R1:Value() and myHero.mana - 40*R.Count > 40) or not NS_Kog.misc.rc.R1:Value()) then
 		CastSkillShot(_R, Vector(mob))
 	end
 end
@@ -277,7 +278,7 @@ end
 
 local function DmgHPBar()
 	for i = 1, C do
-		if ValidTarget(Enemies[i], R.Range()) and HPBar[i] then
+		if ValidTarget(Enemies[i], R.Range()*2) and HPBar[i] then
 			HPBar[i]:Draw()
 		end
 	end
@@ -287,7 +288,7 @@ local function Updating()
 	WRange = 625 + 30*GetData(_W).level
 	for i = 1, C do
 		local enemy = Enemies[i]
-		if ValidTarget(enemy, 2000) and HPBar[i] then
+		if ValidTarget(enemy, R.Range()*2) and HPBar[i] then
 			HPBar[i]:SetValue(1, enemy, R.Damage(enemy), IsSReady(_R))
 			HPBar[i]:SetValue(2, enemy, Q.Damage(enemy), IsSReady(_Q))
 			HPBar[i]:SetValue(3, enemy, E.Damage(enemy), IsSReady(_E))
@@ -304,7 +305,7 @@ local function GetRTarget()
 	local RTarget = nil
 	for i = 1, C do
 		local enemy = Enemies[i]
-		if ValidTarget(enemy, R.Range()) and GetDistanceSqr(enemy.pos) <= R.Range() * R.Range() then
+		if ValidTarget(enemy, R.Range()) then
 			if not RTarget or GetHP2(enemy) - R.Damage(enemy) < GetHP2(RTarget) - R.Damage(RTarget) then
 				RTarget = enemy
 			end
@@ -354,13 +355,13 @@ local function Tick()
 		if IsReady(_E) and NS_Kog.E.cb:Value() then CastE(target) end
 		if IsReady(_W) and NS_Kog.W.cb:Value() then CastW() end
 		if IsReady(_Q) and NS_Kog.Q.cb:Value() then CastQ(target) end
-		if IsReady(_R) and NS_Kog.R.cb:Value() and NS_Kog.misc.rc.R2:Value() > R.Count and ((NS_Kog.misc.rc.R1:Value() and myHero.mana - 50*R.Count >= 40) or not NS_Kog.misc.rc.R1:Value()) and GetRTarget() then CastR(GetRTarget()) end
+		if IsReady(_R) and NS_Kog.R.cb:Value() and ManaCheck(NS_Kog.misc.rc.R3:Value()) and NS_Kog.misc.rc.R2:Value() > R.Count and ((NS_Kog.misc.rc.R1:Value() and myHero.mana - 40*R.Count >= 40) or not NS_Kog.misc.rc.R1:Value()) then CastR(GetRTarget()) end
 	end
 
     if mode == "Harass" and CCast then
 		if IsReady(_E) and NS_Kog.E.hr:Value() and ManaCheck(NS_Kog.E.MPhr:Value()) then CastE(target) end
 		if IsReady(_Q) and NS_Kog.Q.hr:Value() and ManaCheck(NS_Kog.Q.MPhr:Value()) then CastE(target) end
-		if IsReady(_R) and NS_Kog.R.hr:Value() and ManaCheck(NS_Kog.R.MPhr:Value()) and NS_Kog.misc.rc.R2:Value() > R.Count and ((NS_Kog.misc.rc.R1:Value() and myHero.mana - 50*R.Count >= 40) or not NS_Kog.misc.rc.R1:Value()) and GetRTarget() then CastR(GetRTarget()) end
+		if IsReady(_R) and NS_Kog.R.hr:Value() and ManaCheck(NS_Kog.R.MPhr:Value()) and NS_Kog.misc.rc.R2:Value() > R.Count and ((NS_Kog.misc.rc.R1:Value() and myHero.mana - 40*R.Count >= 40) or not NS_Kog.misc.rc.R1:Value()) then CastR(GetRTarget()) end
 	end
 
 	if mode == "LaneClear" then
