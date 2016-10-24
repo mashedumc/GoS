@@ -1,10 +1,10 @@
---[[ NS_Awa ver: 0.06
+--[[ NS_Awa ver: 0.07
 	Cooldown tracker
 	Recall tracker
 	Minimap Track
 --]]
 
-local NSAwa_Version = 0.06
+local NSAwa_Version = 0.07
 local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
@@ -43,12 +43,14 @@ do
 end
 
 local CoolDown, recall, champ, sumDF, last = { }, { }, { }, { { }, { } }, { t = { }, p = { } }
-local menu, cMove, bPos = nil, false, nil
+local menu, cMove, basePos = nil, false, nil
 
 if mapID == SUMMONERS_RIFT then
 	basePos = myHero.team == 100 and Vector(14300, 171, 14380) or Vector(410, 182, 420)
 elseif mapID == TWISTED_TREELINE then
-	basePos = myHero.team == 100 and Vector(14300, 171, 14380) or Vector(410, 182, 420)
+	basePos = myHero.team == 100 and Vector(14357, 151, 7295) or Vector(1065, 151, 7296)
+elseif mapID == HOWLING_ABYSS then
+	basePos = myHero.team == 100 and Vector(953, -131, 1059) or Vector(11800, -132, 11561)
 elseif mapID == CRYSTAL_SCAR then
 	basePos = myHero.team == 100 and Vector(14300, 171, 14380) or Vector(410, 182, 420)
 end	
