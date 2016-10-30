@@ -1,10 +1,10 @@
---[[ NS_Awa ver: 0.08
+--[[ NS_Awa ver: 0.09
 	Cooldown tracker
 	Recall tracker
 	Minimap Track
 --]]
 
-local NSAwa_Version = 0.08
+local NSAwa_Version = 0.09
 local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
@@ -42,7 +42,8 @@ do
 	if dfcd == 0 then addToDownload("Spells", "cd.png") end
 end
 
-local CoolDown, recall, champ, sumDF, last = { }, { }, { }, { { }, { } }, { t = { }, p = { } }
+local recall, champ, sumDF = { }, { }, { }
+local last = { { }, { } }
 local menu, cMove, basePos = nil, false, nil
 
 if mapID == SUMMONERS_RIFT then
@@ -67,7 +68,7 @@ local rcf = {
 
 local function CoolDownTracker()
 	for i, enemy in pairs(GetEnemyHeroes()) do
-		if not enemy.dead and enemy.visible and menu.cd.e["cd_"..enemy.charName]:Value() then
+		if not enemy.dead and enemy.visible and menu.cd.e[enemy.charName]:Value() then
 			local bar = GetHPBarPos(enemy)
 			if bar.x > 0 and bar.y > 0 then
 				local posX1 = bar.x + (fixbar[enemy.charName] and fixbar[enemy.charName].x or fixbar.Other.x)
@@ -108,7 +109,7 @@ local function CoolDownTracker()
 	end
 
 	for i, ally in pairs(GetAllyHeroes()) do
-		if not ally.dead and menu.cd.a["cd_"..ally.charName]:Value() then
+		if not ally.dead and menu.cd.a[ally.charName]:Value() then
 			local bar = GetHPBarPos(ally)
 			if bar.x > 0 and bar.y > 0 then
 				local posX1 = bar.x + (fixbar[ally.charName] and fixbar[ally.charName].x or fixbar.Other.x)
@@ -151,16 +152,16 @@ end
 
 local function RecallTracker()
 	if menu.rc.cm:Value() and cMove and CursorIsUnder(menu.rc.px:Value()-15, menu.rc.py:Value()-20, 345, 33) then
-		menu.rc.px.value = GetCursorPos().x - 330/2
+		menu.rc.px.value = GetCursorPos().x - 165
 		menu.rc.py.value = GetCursorPos().y
 	end
 	if #recall > 0 or menu.rc.cm:Value() then DrawSprite(rcbar, menu.rc.px:Value(), menu.rc.py:Value(), 0, 0, 330, 13, GoS.White) end
 	for i = 1, #recall do
-		recall[i].cTime = (recall[i].fT - os.clock() + recall[i].sT)
+		recall[i].cTime = (recall[i].fT - GetGameTimer() + recall[i].sT)
 		local rec = recall[i]
 		if rec.stopT then
 			recall[i].cTime = (recall[i].fT - recall[i].stopT + recall[i].sT)
-			if os.clock() > rec.stopT + 0.5 then
+			if GetGameTimer() > rec.stopT + 0.5 then
 				table.remove(recall, i)
 				break
 			end
@@ -174,11 +175,11 @@ end
 local function MinimapTrack()
 	for i, enemy in pairs(GetEnemyHeroes()) do
 		if menu.mm[enemy.charName]:Value() and not enemy.visible and not enemy.dead then
-			local pos = WorldToMinimap(last.p[enemy.networkID])
+			local pos = WorldToMinimap(last[2][enemy.networkID])
 			DrawSprite(champ[i], pos.x - 10.8, pos.y - 10.8, 0, 0, 21.6, 21.6, GoS.White)
-			local time = os.clock() - last.t[enemy.networkID]
-			local mp = math.min(4001, enemy.ms*time)
-			if mp < 4800 then DrawCircleMinimap(last.p[enemy.networkID], mp, 1, 255, 0x9000F5FF) end
+			local time = GetGameTimer() - last[1][enemy.networkID]
+			local mp = enemy.ms*time
+			if mp < 4300 then DrawCircleMinimap(last[2][enemy.networkID], mp, 1, 255, 0x9000F5FF) end
 			if time < 60 then
 				DrawText(string.format("%2d", math.floor(time)), 12, pos.x - 7.5, pos.y + 5, GoS.White)
 			else
@@ -236,15 +237,15 @@ local function Load()
 	OnProcessRecall(function(unit, rec)
 		if unit.team == myHero.team then return end
 		if rec.isStart then
-			recall[#recall + 1] = { unit = unit, sT = os.clock(), fT = rec.totalTime*0.001, color = function(i) if rec.totalTime <= 4 then return ARGB(280 - 45*i, 181, 19, 210) end return ARGB(280 - 45*i, 255, 255, 255) end }
+			recall[#recall + 1] = { unit = unit, sT = GetGameTimer(), fT = rec.totalTime*0.001, color = function(i) if rec.totalTime <= 4 then return ARGB(280 - 45*i, 181, 19, 210) end return ARGB(280 - 45*i, 255, 255, 255) end }
 		else
-			if rec.isFinish or (rec.totalTime <= 4 and rec.passedTime >= 3940 or rec.passedTime >= 7940) then last.p[unit.networkID] = basePos end
+			if rec.isFinish or (rec.totalTime <= 4 and rec.passedTime >= 3940 or rec.passedTime >= 7940) then last[2][unit.networkID] = basePos end
 			for i = 1, #recall do
 				if recall[i].unit.networkID == unit.networkID then
 					if rec.isFinish or (rec.totalTime <= 4 and rec.passedTime >= 3940 or rec.passedTime >= 7940) then
 						table.remove(recall, i)
 					else
-						recall[i].stopT = os.clock() + 0.35
+						recall[i].stopT = GetGameTimer() + 0.35
 						recall[i].color = function(i) if rec.totalTime <= 4 then return ARGB(280 - 45*i, 159, 11, 196) end return ARGB(280 - 45*i, 208, 198, 198) end
 					end
 					break
@@ -255,8 +256,8 @@ local function Load()
 
 	OnLoseVision(function(unit)
 		if unit.type == "AIHeroClient" and unit.team ~= myHero.team then
-			last.t[unit.networkID] = os.clock()
-			last.p[unit.networkID] = not unit.dead and Vector(unit.pos) or basePos
+			last[1][unit.networkID] = GetGameTimer()
+			last[2][unit.networkID] = not unit.dead and Vector(unit.pos) or basePos
 		end
 	end)
 
@@ -270,6 +271,7 @@ end
 
 class "NS_Awaraness"
 function NS_Awaraness:__init(Menu)
+	if menu then return end
 	menu = Menu
 	menu:Menu("cd", "Cooldown Tracker")
 		menu.cd:Menu("e", "Track Enemies")
@@ -282,7 +284,7 @@ function NS_Awaraness:__init(Menu)
 	menu:Menu("mm", "Track Minimap")
 	OnLoad(function()
 		for i, enemy in pairs(GetEnemyHeroes()) do
-			menu.cd.e:Boolean("cd_"..enemy.charName, "Track "..enemy.charName, true)
+			menu.cd.e:Boolean(enemy.charName, "Track "..enemy.charName, true)
 			menu.mm:Boolean(enemy.charName, "Track "..enemy.charName, true)
 
 			local NAME = enemy:GetSpellData(4).name:lower()
@@ -311,12 +313,12 @@ function NS_Awaraness:__init(Menu)
 
 			champ[i] = CreateSpriteFromFile("NS_Awa\\Champions\\"..enemy.charName..".png", 0.4)
 			if champ[i] == 0 then addToDownload("Champions", enemy.charName..".png") end
-			last.t[enemy.networkID] = os.clock()
-			last.p[enemy.networkID] = Vector(enemy.pos)
+			last[1][enemy.networkID] = GetGameTimer()
+			last[2][enemy.networkID] = Vector(enemy.pos)
 		end
 
 		for i, ally in pairs(GetAllyHeroes()) do
-			menu.cd.a:Boolean("cd_"..ally.charName, "Track "..ally.charName, true)
+			menu.cd.a:Boolean(ally.charName, "Track "..ally.charName, true)
 
 			local NAME = ally:GetSpellData(4).name:lower()
 			if not FileExist(SPRITE_PATH.."NS_Awa\\Spells\\"..NAME..".png") then
