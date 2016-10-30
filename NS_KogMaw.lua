@@ -36,12 +36,10 @@ local function SetSkin(Menu, skintable)
 end
 
 local function DrawDmgOnHPBar(Menu, Color, Text)
-	local Dt = {}
 	for i = 1, C do
-		Menu:Menu("HPBar_"..Enemies[i].charName, "Draw Dmg HPBar "..Enemies[i].charName)
-		Dt[i] = DrawDmgHPBar(Menu["HPBar_"..Enemies[i].charName], Color, Text)
+		Menu:Menu(Enemies[i].charName, "Draw Dmg HPBar "..Enemies[i].charName)
+		HPBar[i] = DrawDmgHPBar(Menu[Enemies[i].charName], Enemies[i], Color, Text)
 	end
-		return Dt
 end
 
 local GetLineFarmPosition2 = function(range, width, objects)
@@ -279,6 +277,7 @@ end
 local function DmgHPBar()
 	for i = 1, C do
 		if ValidTarget(Enemies[i], R.Range()*2) and HPBar[i] then
+			HPBar[i]:UpdatePos()
 			HPBar[i]:Draw()
 		end
 	end
@@ -289,9 +288,9 @@ local function Updating()
 	for i = 1, C do
 		local enemy = Enemies[i]
 		if ValidTarget(enemy, R.Range()*2) and HPBar[i] then
-			HPBar[i]:SetValue(1, enemy, R.Damage(enemy), IsSReady(_R))
-			HPBar[i]:SetValue(2, enemy, Q.Damage(enemy), IsSReady(_Q))
-			HPBar[i]:SetValue(3, enemy, E.Damage(enemy), IsSReady(_E))
+			HPBar[i]:SetValue(1, R.Damage(enemy), IsSReady(_R))
+			HPBar[i]:SetValue(2, Q.Damage(enemy), IsSReady(_Q))
+			HPBar[i]:SetValue(3, E.Damage(enemy), IsSReady(_E))
 			HPBar[i]:CheckValue()
 		end
 	end
@@ -383,7 +382,7 @@ end
 ------------------------------------
 
 OnLoad(function()
-	HPBar = DrawDmgOnHPBar(NS_Kog.dw, {ARGB(200, 89, 0 ,179), ARGB(200, 0, 245, 255), ARGB(200, 0, 217, 108)}, {"R", "Q", "E"})
+	DrawDmgOnHPBar(NS_Kog.dw, {ARGB(200, 89, 0 ,179), ARGB(200, 0, 245, 255), ARGB(200, 0, 217, 108)}, {"R", "Q", "E"})
 	OnUpdateBuff(UpdateBuff)
 	OnRemoveBuff(RemoveBuff)
 	OnTick(Tick)
