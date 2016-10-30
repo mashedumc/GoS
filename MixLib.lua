@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.097 ]]--
+--[[ Mix Lib Version 0.0975 ]]--
 
-local MixLibVersion = 0.097
+local MixLibVersion = 0.0975
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -251,7 +251,7 @@ function DrawDmgHPBar:CheckValue()
 			end
 			self.value[i].show = false
 		end
-		if self.data[i].pos <= 0 then 
+		if self.data[i].pos < 0 then 
 			self.data[i].pos = 0
 			if i == 1 then
 				self.data[i].fill = hpP(self.unit)
