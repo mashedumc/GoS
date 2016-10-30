@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.0965 ]]--
+--[[ Mix Lib Version 0.097 ]]--
 
-local MixLibVersion = 0.0965
+local MixLibVersion = 0.097
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -231,66 +231,73 @@ function MixLib:Predicting(Pred, unit, data, IPred)
 end
 
 class "DrawDmgHPBar"
-function DrawDmgHPBar:__init(Menu, color, Text)
-	self.cfg, self.data, self.c = Menu, { }, #color
+function DrawDmgHPBar:__init(Menu, unit, color, Text)
+	self.cfg, self.data, self.value, self.c = Menu, { }, { }, #Text
+	self.unit = unit
 	self.cfg:Boolean("rt", "Enable on this target?", true)
 	self.cfg:Info("rc", "    ------------------------------")
 	for i = 1, self.c do
-		self.data[i] = { fill = 0, pos = nil }
-		self.cfg:Boolean("r1_"..i, "Draw "..Text[i].." Dmg?", true)
-		self.cfg:ColorPick("r2_"..i, "Set "..Text[i].." Color", {color[i]["a"], color[i]["r"], color[i]["g"] ,color[i]["b"]})	
+		self.value[i] = { x = 0, y = 0, show = false }
+		self.data[i] = { fill = 0, pos = 0, check = false }
+		self.cfg:Boolean(i, "Draw "..Text[i].." Dmg?", true)
+		self.cfg:ColorPick("color_"..i, "Set "..Text[i].." Color", {color[i]["a"], color[i]["r"], color[i]["g"] ,color[i]["b"]})	
 	end
 end
 
 function DrawDmgHPBar:CheckValue()
 	if not self.cfg.rt:Value() then return end
 	for i = 1, self.c do
-		if not self.cfg["r1_"..i]:Value() or not self.data[i].check then
+		if not self.cfg[i]:Value() or not self.data[i].check then
 			if i == 1 then
-				self.data[i].pos = hpP(self.data[i].unit)
+				self.data[i].pos = hpP(self.unit)
 			else
 				self.data[i].pos = self.data[i-1].pos
 			end
+			self.value[i].show = false
 		end
-		if self.data[i].pos and self.data[i].pos < 0 then
+		if self.data[i].pos <= 0 then 
 			self.data[i].pos = 0
 			if i == 1 then
-				self.data[i].fill = hpP(self.data[i].unit)
+				self.data[i].fill = hpP(self.unit)
 			else
 				self.data[i].fill = self.data[i-1].pos
 			end
+			if i < self.c then self.value[i+1].show = false end
 		end
 	end
 end
 
-function DrawDmgHPBar:SetValue(value, target, damage, boolean)
+function DrawDmgHPBar:SetValue(i, damage, boolean)
 	if not self.cfg.rt:Value() then return end
-	self.data[value].unit = target
-	self.data[value].fill = dmgP(damage, self.data[value].unit)
-	self.data[value].check = boolean
-	if not boolean or not self.cfg["r1_"..value]:Value() then return end
-	if value == 1 then
-		self.data[value].pos = hpP(self.data[value].unit) - self.data[value].fill
+	self.data[i].fill = dmgP(damage, self.unit)
+	self.data[i].check = boolean
+	self.value[i].show = true
+	if not boolean or not self.cfg[i]:Value() then return end
+	if i == 1 then
+		self.data[i].pos = hpP(self.unit) - self.data[i].fill
 	else
-		if self.data[value - 1].pos then self.data[value].pos = self.data[value - 1].pos - self.data[value].fill end
+		self.data[i].pos = self.data[i - 1].pos - self.data[i].fill
+	end
+end
+
+function DrawDmgHPBar:UpdatePos()
+	for i = 1, self.c do
+		self.value[i].x = hpbar(self.unit).x + self.data[i].pos
+		self.value[i].y = hpbar(self.unit).y
 	end
 end
 
 function DrawDmgHPBar:Draw()
 	if not self.cfg.rt:Value() then return end
 	for i = 1, self.c do
-		if self.cfg["r1_"..i]:Value() and self.data[i].check and self.data[i].pos and hpbar(self.data[i].unit).x + self.data[i].pos > 0 and hpbar(self.data[i].unit).y > 0 then
-			FillRect(hpbar(self.data[i].unit).x + self.data[i].pos, hpbar(self.data[i].unit).y, self.data[i].fill, 9, self.cfg["r2_"..i]:Value())
+		if self.value[i].show and self.value[i].x > 0 and self.value[i].y > 0 then
+			FillRect(self.value[i].x, self.value[i].y, self.data[i].fill, 9, self.cfg["color_"..i]:Value())
 		end
 	end
 end
 
-function DrawDmgHPBar:GetPos()
-	local result = { }
-	for i = 1, self.c, 1 do
-		result[i] = { x = self.data[i].pos.x, y = self.data[i].y, fill = self.data[i].fill }
-	end
-		return result
+function DrawDmgHPBar:GetPos(i) -- members: x, y, fill(number), show(true/false)
+	return { x = self.value[i].x, y = self.value[i].y, fill = self.data[i].fill, show = self.value[i].show }
 end
 
 class "DCircle"
