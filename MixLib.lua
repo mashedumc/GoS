@@ -115,9 +115,6 @@ function MixLib:BlockMovement(boolean)
 end
 
 function MixLib:HealthPredict(unit, time, hpname) -- time[ms] | name["OW", "OP", "GoS"]
-	if hpname == "GoS" then
-		return unit.health - GetDamagePrediction(unit, time + GetLatency()*0.5)
-	end
 	if hpname == "OP" then
 		return GetHealthPrediction(unit, time + GetLatency()*0.5)
 	end
@@ -128,14 +125,13 @@ function MixLib:HealthPredict(unit, time, hpname) -- time[ms] | name["OW", "OP",
 			return DAC:GetPredictedHealth(unit, time*0.001)
 		elseif self.OW == "PW" then
 			return PW:PredictHealth(unit, time)
-		elseif self.OW == "GoSWalk" then
-			return unit.health - GetDamagePrediction(unit, time + GetLatency()*0.5)
 		elseif self.OW == "DACR" then
 			return DACR:GetHealthPrediction(unit, time*0.001, 0)
 		elseif self.OW == "SLW" then
 			return SLW:PredictHP(unit, time*0.001 + GetLatency()*0.5)
 		end
 	end
+	return unit.health - GetDamagePrediction(unit, time + GetLatency()*0.5)
 end
 
 -- Ignite: "summonerdot"
