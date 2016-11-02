@@ -361,8 +361,8 @@ local function LaneClear()
 end
 
 local function JungleClear()
-	if not Cr.tmob[1] then return end
-	local mob = Cr.tmob[1]
+	if not Cr.mmob then return end
+	local mob = Cr.mmob
 	if IsReady(_Q) and NS_Kata.Q.jc:Value() and ValidTarget(mob, Q.Range) then
 		CastQ(mob)
 	end
