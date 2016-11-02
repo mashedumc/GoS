@@ -253,8 +253,8 @@ local function LaneClear()
 end
 
 local function JungleClear()
-	if not Cr.tmob[1] then return end
-	local mob = Cr.tmob[1]
+	if not Cr.mmob then return end
+	local mob = Cr.mmob
 	if IsReady(_Q) and NS_Kog.Q.jc:Value() and ManaCheck(NS_Kog.Q.MPjc:Value()) and ValidTarget(mob, Q.Range) then
 		CastSkillShot(_Q, Vector(mob))
 	end
