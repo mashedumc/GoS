@@ -474,8 +474,8 @@ local function LaneClear()
 end
 
 local function JungleClear()
-	if not Cr.tmob[1] then return end
-	local mob = Cr.tmob[1]
+	if not Cr.mmob then return end
+	local mob = Cr.mmob
 	if IsReady(_W) and NS_Xe.W.jc:Value() and ManaCheck(NS_Xe.W.MPjc:Value()) then CastSkillShot(_W, Vector(mob)) end
 	if IsReady(_E) and NS_Xe.E.jc:Value() and ManaCheck(NS_Xe.E.MPjc:Value()) and ValidTarget(mob, E.Range) then CastSkillShot(_E, Vector(mob)) end
 	if IsReady(_Q) and NS_Xe.Q.jc:Value() and (ManaCheck(NS_Xe.Q.MPjc:Value()) or Q.Charging) then if not Q.Charging then CastSkillShot(_Q, GetMousePos()) elseif ValidTarget(mob, Q.Range) then CastSkillShot2(_Q, Vector(mob)) end end
