@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.23
+--[[ NEET Series Version 0.24
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-local NEETSeries_Version = 0.23
+local NEETSeries_Version = 0.24
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -38,6 +38,7 @@ function __MinionManager:__init(range1, range2)
 	self.mob = {}
 	self.tminion = {}
 	self.tmob = {}
+	self.mmob = nil
 	OnObjectLoad(function(obj) self:CreateObj(obj) end)
 	OnCreateObj(function(obj) self:CreateObj(obj) end)
 	OnDeleteObj(function(obj) self:DeleteObj(obj) end)
@@ -45,29 +46,20 @@ end
 
 function __MinionManager:CreateObj(obj)
 	if GetObjectType(obj) == "obj_AI_Minion" and GetTeam(obj) == MINION_ENEMY and GetObjectBaseName(obj):find("Minion_") and IsObjectAlive(obj) then
-		self.minion[#self.minion +1] = obj
+		self.minion[GetNetworkID(obj)] = obj
 	elseif GetTeam(obj) == 300 and GetObjectType(obj) == "obj_AI_Minion" and IsObjectAlive(obj) then
-		self.mob[#self.mob +1] = obj
+		self.mob[GetNetworkID(obj)] = obj
 	end
 end
 
 function __MinionManager:DeleteObj(obj)
 	if GetObjectType(obj) ~= "obj_AI_Minion" or GetTeam(obj) == MINION_ALLY then return end
 	if GetObjectBaseName(obj):find("Minion_") and GetTeam(obj) ~= 300 then
-		for i = 1, #self.minion do
-			if self.minion[i] == obj then 
-				table.remove(self.minion, i)
-				return
-			end
-		end
+		self.minion[GetNetworkID(obj)] = nil
 	end
 
-	if GetTeam(obj) ~= 300 then return end
-	for i = 1, #self.mob do
-		if self.mob[i] == obj then
-			table.remove(self.mob, i)
-			return
-		end
+	if GetTeam(obj) == 300 then
+		self.mob[GetNetworkID(obj)] = nil
 	end
 end
 
@@ -75,19 +67,18 @@ function __MinionManager:Update()
 	self.tminion = {}
 	for _, minion in pairs(self.minion) do
 		if GetDistanceSqr(minion) <= self.range1 and IsObjectAlive(minion) and IsTargetable(minion) and not IsImmune(minion, myHero) and GetTeam(minion) == MINION_ENEMY then
-			self.tminion[#self.tminion +1] = minion
+			self.tminion[#self.tminion + 1] = minion
 		end
 	end
 
 	self.tmob = {}
+	self.mmob = nil
 	for _, mob in pairs(self.mob) do
 		if GetDistanceSqr(mob) <= self.range2 and IsObjectAlive(mob) and IsTargetable(mob) and not IsImmune(mob, myHero) and GetTeam(mob) == 300 then
-			self.tmob[#self.tmob +1] = mob
+			self.tmob[#self.tmob + 1] = mob
+			if not self.mmob or GetMaxHP(self.mmob) < GetMaxHP(mob) then self.mmob = mob end
 		end
 	end
-
-	table.sort(self.tminion, SORT_HEALTH_ASC)
-	table.sort(self.tmob, SORT_MAXHEALTH_DEC)
 end
 
 class "PredictSpell"
@@ -187,7 +178,7 @@ end
 		{ Version 0.22 }
 			- Fixed Kog'Maw RDmg, Added RecallTracker and MinimapTrack
 
-		{ Version 0.23 }
+		{ Version 0.23 - 0.24 }
 			- Fixed somethings
 
 -------------------------------------------]]
