@@ -1,10 +1,10 @@
---[[ NS_Awa ver: 0.09
+--[[ NS_Awa ver: 0.1
 	Cooldown tracker
 	Recall tracker
 	Minimap Track
 --]]
 
-local NSAwa_Version = 0.09
+local NSAwa_Version = 0.1
 local function NSAwa_Print(text) PrintChat(string.format("<font color=\"#D9006C\"><b>[NS Awaraness]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not DirExists(SPRITE_PATH.."NS_Awa\\") then CreateDir(SPRITE_PATH.."NS_Awa\\") end
@@ -245,7 +245,7 @@ local function Load()
 					if rec.isFinish or (rec.totalTime <= 4 and rec.passedTime >= 3940 or rec.passedTime >= 7940) then
 						table.remove(recall, i)
 					else
-						recall[i].stopT = GetGameTimer() + 0.35
+						recall[i].stopT = GetGameTimer()
 						recall[i].color = function(i) if rec.totalTime <= 4 then return ARGB(280 - 45*i, 159, 11, 196) end return ARGB(280 - 45*i, 208, 198, 198) end
 					end
 					break
