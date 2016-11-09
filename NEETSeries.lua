@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.24
+--[[ NEET Series Version 0.245
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-local NEETSeries_Version = 0.24
+local NEETSeries_Version = 0.245
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -19,7 +19,7 @@ if not FileExist(COMMON_PATH.."OpenPredict.lua") or not FileExist(COMMON_PATH.."
 if not ChallengerCommonLoaded then require('ChallengerCommon') end
 if not Analytics then require("Analytics") end
 
-local SupTbl = {"Xerath", "KogMaw", "Annie", "Katarina"}
+local SupTbl = {"Xerath", "KogMaw", "Annie"}
 local Supported = Set(SupTbl)
 
 local NS_Menu = MenuConfig("NEETSeries", "[NEET Series]: Menu")
@@ -180,5 +180,8 @@ end
 
 		{ Version 0.23 - 0.24 }
 			- Fixed somethings
+
+		{ Version 0.245 }
+			- Not support Kata patch 6.22
 
 -------------------------------------------]]
