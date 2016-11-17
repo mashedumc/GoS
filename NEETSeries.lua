@@ -1,4 +1,4 @@
---[[ NEET Series Version 0.245
+--[[ NEET Series Version 0.246
 	_____   ___________________________   ________           _____             
 	___  | / /__  ____/__  ____/__  __/   __  ___/______________(_)____________
 	__   |/ /__  __/  __  __/  __  /      _____ \_  _ \_  ___/_  /_  _ \_  ___/
@@ -6,7 +6,7 @@
 	/_/ |_/  /_____/  /_____/  /_/        /____/ \___//_/    /_/  \___//____/  
 
 ---------------------------------------]]
-local NEETSeries_Version = 0.245
+local NEETSeries_Version = 0.246
 local function NEETSeries_Print(text) PrintChat(string.format("<font color=\"#4169E1\"><b>[NEET Series]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 if not FileExist(COMMON_PATH.."MixLib.lua") then
@@ -19,7 +19,7 @@ if not FileExist(COMMON_PATH.."OpenPredict.lua") or not FileExist(COMMON_PATH.."
 if not ChallengerCommonLoaded then require('ChallengerCommon') end
 if not Analytics then require("Analytics") end
 
-local SupTbl = {"Xerath", "KogMaw", "Annie"}
+local SupTbl = {"Xerath", "KogMaw", "Annie", "Karthus"}
 local Supported = Set(SupTbl)
 
 local NS_Menu = MenuConfig("NEETSeries", "[NEET Series]: Menu")
@@ -88,7 +88,7 @@ function PredictSpell:__init(Slot, Delay, Speed, Width, Range, Collision, collNu
 	local Min = (Accel and Other.min) and Other.min or nil
 	local Max = (Accel and Other.max) and Other.max or nil
 	self.Pred = predName
-	self.data = { slot = Slot, name = Name, speed = Speed, delay = Delay, range = Range, width = Width, collision = Collision, col = {"minion", "yasuowall"}, coll = collNum, aoe = Aoe, type = Type, hc = HitChance, angle = Angle, accel = Accel, minSpeed = Miin, maxSpeed = Max }
+	self.data = { slot = Slot, name = Name, speed = Speed, delay = Delay, range = Range + myHero.boundingRadius, width = Width, radius = Width*0.5, collision = Collision, col = {"minion", "yasuowall"}, coll = collNum, aoe = Aoe, type = Type, hc = HitChance, angle = Angle, accel = Accel, minSpeed = Min, maxSpeed = Max }
 	self.IPrediction = self.Pred == "IPrediction" and IPrediction.Prediction(self.data)
 	self.css2 = (Other and Other.s2) and true or false
 end
@@ -183,5 +183,9 @@ end
 
 		{ Version 0.245 }
 			- Not support Kata patch 6.22
+
+		{ Version 0.246 }
+			- Delete Annie W Laneclear (fps drop)
+
 
 -------------------------------------------]]
