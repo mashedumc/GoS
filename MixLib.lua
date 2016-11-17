@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.0975 ]]--
+--[[ Mix Lib Version 0.098 ]]--
 
-local MixLibVersion = 0.0975
+local MixLibVersion = 0.098
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -18,7 +18,8 @@ do
 			"GPrediction.lua",
 			"Item-Pi-brary.lua",
 			"Analytics.lua",
-			"Krystralib.lua"
+			"Krystralib.lua",
+			"ChallengerDLL.dll"
 		},
 
 		[2] = {
@@ -26,7 +27,8 @@ do
 			"https://raw.githubusercontent.com/KeVuong/GoS/master/Common/GPrediction.lua",
 			"https://raw.githubusercontent.com/DefinitelyRiot/PlatyGOS/master/Common/Item-Pi-brary.lua",
 			"https://raw.githubusercontent.com/LoggeL/GoS/master/Analytics.lua",
-			"https://raw.githubusercontent.com/Lonsemaria/Gos/master/Common/Krystralib.lua"
+			"https://raw.githubusercontent.com/Lonsemaria/Gos/master/Common/Krystralib.lua",
+			"https://raw.githubusercontent.com/D3ftsu/GoS/master/Common/ChallengerDLL.dll"
 		}
 	}
 	local c, t, fp = 0, {}, function(n) local s = n == 1 and "" or "s" Mix_Print(n.." file"..s.." need to be download. Please wait...") end
@@ -41,8 +43,8 @@ do
 		fp(c)
 		local ps = function(n) Mix_Print("("..n.."/"..c..") "..FilesCheck[1][t[n]]..". Don't Press F6!") end
 		local download = function(n) DownloadFileAsync(FilesCheck[2][t[n]], COMMON_PATH..FilesCheck[1][t[n]], function() ps(n) check(n+1) end) end
-		check = function(n) if n > c then Mix_Print("All file need have been downloaded. Please x2F6!") return end DelayAction(function() download(n) end, 1.5) end
-		DelayAction(function() download(1) end, 1.5)
+		check = function(n) if n > c then Mix_Print("All file need have been downloaded. Please x2F6!") return end DelayAction(function() download(n) end, 1) end
+		DelayAction(function() download(1) end, 1)
 	end
 end
 
@@ -148,10 +150,11 @@ end
 -- VisionWard: "visionward"
 -- BlueTrinket: "trinketorb"
 
--- E.g: local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
+-- Example: local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
 
 function MixLib:GetSlotByName(NAME, s, e) -- Name, Start, End
-	local s, e = s or 0, e or 12
+	s = s or 0
+	e = e or 12
 	for i = s, e do
 		if myHero:GetSpellData(i).name and myHero:GetSpellData(i).name:lower():find(NAME) then
 			return i
@@ -187,10 +190,10 @@ end
 
 local lastMove = 0
 function MixLib:Move(Pos)
-	local mPos = Pos or GetMousePos()
+	Pos = Pos or GetMousePos()
 	if lastMove + 0.32 < os.clock() then
-		if GetDistance(mPos) > 100 then
-			local POS = Vector(myHero.pos + Vector(mPos - myHero.pos):normalized()*math.min(GetDistance(mPos),400))
+		if GetDistance(Pos) > 100 then
+			local POS = Vector(myHero.pos + Vector(Pos - myHero.pos):normalized()*math.min(GetDistance(Pos),400))
 			MoveToXYZ(POS)
 		end
 		lastMove = os.clock()
@@ -211,7 +214,7 @@ function MixLib:Predicting(Pred, unit, data, IPred)
 		end
 	end
 	if Pred == "GPrediction" then
-		data.type, data.radius = data.type == "linear" and "line" or data.type, data.width*0.5
+		data.type = data.type == "linear" and "line" or data.type
 		local Pred = gPred:GetPrediction(unit, myHero, data, data.aoe, data.collision)
 		return Pred.HitChance, Pred.CastPosition, true, "GPrediction"
 	end
