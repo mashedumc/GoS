@@ -8,7 +8,7 @@
 	(__|  \__)\"_____/   \_______)       |___|\__/|___|(___/    \___)|___/    \___|
 
 ---------------------------------------]]
-local Enemies, C, HPBar, CCast = { }, 0, { }, true
+local Enemies, C, HPBar, CCast, mode = { }, 0, { }, false, ""
 local huge, min = math.huge, math.min
 local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
@@ -30,7 +30,7 @@ local function AddMenu(Menu, ID, Pred, Text, Tbl, MP)
 end
 
 local function SetSkin(Menu, skintable)
-	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
+	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id) end
 	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", #skintable, skintable, function(id) ChangeSkin(id) end)
 	if (Menu[myHero.charName.."_SetSkin"]:Value() ~= #skintable) then ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value()) end
 end
@@ -171,7 +171,7 @@ local NS_Kog = MenuConfig("NS_KogMaw", "[NEET Series] - Kog'Maw")
 			NS_Kog.misc.sme:Info("ifo3", "BlockMove: Other case")
         	NS_Kog.misc.sme:Boolean("b1", "Enable block move check", true)
         	NS_Kog.misc.sme:Slider("b2", "Enable if AttackSpeed >=", 1.7, 1.2, 2.5, 0.1)
-		SetSkin(NS_Kog.misc, {"Classic", "Caterpillar", "Sonoran", "Monarch", "Reindeer", "Lion Dance", "Deep Sea", "Jurassic", "Battlecast", "Disable"})
+		SetSkin(NS_Kog.misc, {"Caterpillar", "Sonoran", "Monarch", "Reindeer", "Lion Dance", "Deep Sea", "Jurassic", "Battlecast", "Disable"})
 -----------------------------------
 
 local Target = ChallengerTargetSelector(600, 1, true, nil, false, NS_Kog)
@@ -338,7 +338,7 @@ local function Tick()
 	if myHero.dead or not Enemies[C] then return end
 	Updating()
 	target = Target:GetTarget()
-	local mode = Mix:Mode()
+	mode = Mix:Mode()
 
 	if target and mode == "Combo" and NS_Kog.misc.sme.b1:Value() and 0.625*myHero.attackSpeed >= NS_Kog.misc.sme.b2:Value() then
 		if EnemiesAround(myHero.pos, 300) > 0 or (GetDistance(target) >= 300 and GetDistance(target) <= myHero.range - 85) then
