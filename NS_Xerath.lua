@@ -8,7 +8,7 @@
 	|___/\___|\_______)|__|  \___)(___/    \___)\__|    \__|  |__/  
 
 ---------------------------------------]]
-local Enemies, C, HPBar, CCast = { }, 0, { }, false
+local Enemies, C, HPBar, CCast, mode = { }, 0, { }, false, ""
 local huge, max, min = math.huge, math.max, math.min
 local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
@@ -30,7 +30,7 @@ local function AddMenu(Menu, ID, Pred, Text, Tbl, MP)
 end
 
 local function SetSkin(Menu, skintable)
-	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
+	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id) end
 	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", #skintable, skintable, function(id) ChangeSkin(id) end)
 	if (Menu[myHero.charName.."_SetSkin"]:Value() ~= #skintable) then ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value()) end
 end
@@ -176,7 +176,7 @@ local NS_Xe = MenuConfig("NS_Xerath", "[NEET Series] - Xerath")
 			NS_Xe.misc.delay:Slider("c5", "Delay CastR 5 (ms)", 310, 0, 1500, 1)
 		NS_Xe.misc:KeyBinding("E", "Use E in Combo/Harass (Z)", 90, true, function() end, true)
 		NS_Xe.misc:KeyBinding("escape", "Escape use W/E (G)", 71)
-		SetSkin(NS_Xe.misc, {"Classic", "Runeborn", "Battlecast", "Scorched Earth", "Guardian Of The Sands", "Disable"})
+		SetSkin(NS_Xe.misc, {"Runeborn", "Battlecast", "Scorched Earth", "Guardian Of The Sands", "Disable"})
 
 	--[[ Drawings Menu ]]--
 	NS_Xe:Menu("dw", "Drawings Mode")
@@ -538,7 +538,7 @@ local function Tick()
 	if IsReady(_Q) then QTarget = Q.Target:GetTarget() end
 	if IsReady(_W) then WTarget = W.Target:GetTarget() end
 	if IsReady(_E) then ETarget = E.Target:GetTarget() end
-	local mode = Mix:Mode()
+	mode = Mix:Mode()
 	if mode == "Combo" and CCast then
 		if (NS_Xe.misc.castCombo.WE:Value() and (IsReady(_W) or IsReady(_E))) or not NS_Xe.misc.castCombo.WE:Value() then
 			if NS_Xe.E.cb:Value() and NS_Xe.misc.E:Value() and ETarget then CastE(ETarget) end
