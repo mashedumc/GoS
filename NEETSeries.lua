@@ -19,7 +19,7 @@ if not FileExist(COMMON_PATH.."OpenPredict.lua") or not FileExist(COMMON_PATH.."
 if not ChallengerCommonLoaded then require('ChallengerCommon') end
 if not Analytics then require("Analytics") end
 
-local SupTbl = {"Xerath", "KogMaw", "Annie", "Karthus"}
+local SupTbl = {"Xerath", "KogMaw", "Annie"}
 local Supported = Set(SupTbl)
 
 local NS_Menu = MenuConfig("NEETSeries", "[NEET Series]: Menu")
