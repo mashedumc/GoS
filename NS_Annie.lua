@@ -8,7 +8,7 @@
 	(___/    \___)\___|\____\) \___|\____\)(__\_|_)\_______) 
 
 ---------------------------------------]]
-local Enemies, C, HPBar, CCast = { }, 0, { }, false
+local Enemies, C, HPBar, CCast, mode = { }, 0, { }, false, ""
 local huge, max, min = math.huge, math.max, math.min
 local Check = Set {"Run", "Idle1", "Channel_WNDUP"}
 local Ignite = Mix:GetSlotByName("summonerdot", 4, 5)
@@ -30,7 +30,7 @@ local function AddMenu(Menu, ID, Pred, Text, Tbl, MP)
 end
 
 local function SetSkin(Menu, skintable)
-	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id-1) end
+	local ChangeSkin = function(id) myHero:Skin(id == #skintable and -1 or id) end
 	Menu:DropDown(myHero.charName.."_SetSkin", myHero.charName.." SkinChanger", #skintable, skintable, function(id) ChangeSkin(id) end)
 	if (Menu[myHero.charName.."_SetSkin"]:Value() ~= #skintable) then ChangeSkin(Menu[myHero.charName.."_SetSkin"]:Value()) end
 end
@@ -114,9 +114,8 @@ local NS_Annie = MenuConfig("NS_Annie", "[NEET Series] - Annie")
 	NS_Annie.Q:Boolean("s3", "LastHit but save stun", false)
 
 	--[[ W Settings ]]--
-	AddMenu(NS_Annie, "W", true, "W Settings", {true, true, true, true, true, false}, 15)
-	NS_Annie.W:Slider("h", "LaneClear if hit minions >=", 3, 1, 10, 1)
-	NS_Annie.W:Boolean("s", "Harass/LC but save stun", true)	
+	AddMenu(NS_Annie, "W", true, "W Settings", {true, true, false, true, true, false}, 15)
+	NS_Annie.W:Boolean("s", "Harass but save stun", true)
 	NS_Annie.W.Pred.callback = function(v) W.Prediction.Pred = pred[v] LoadGPred(v) end
 	LoadGPred(NS_Annie.W.Pred:Value())
 
@@ -151,13 +150,13 @@ local NS_Annie = MenuConfig("NS_Annie", "[NEET Series] - Annie")
 	--[[ Misc Menu ]]--
 	NS_Annie:Menu("misc", "Misc Mode")  
 		NS_Annie.misc:Menu("E", "E Setting")
-		NS_Annie.misc.E:KeyBinding("eb1", "Auto E for update stacks", 90, true)
+		NS_Annie.misc.E:KeyBinding("eb1", "Auto E update stack (Z)", 90, true)
 		NS_Annie.misc.E:Slider("eb2", "Auto E if %MP > ", 50, 1, 100, 1)
 		NS_Annie.misc.E:Boolean("eb3", "Auto E if need 1 stack to stun", true)
 		NS_Annie.misc:Menu("hc", "Spell HitChance")
 			NS_Annie.misc.hc:Slider("W", "W Hit-Chance", 25, 1, 100, 1, function(value) W.Prediction.data.hc = value*0.01 end)
 			NS_Annie.misc.hc:Slider("R", "R Hit-Chance", 40, 1, 100, 1, function(value) R.Prediction.data.hc = value*0.01 end)
-	SetSkin(NS_Annie.misc, {"Classic", "Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech", "Disable"})
+	SetSkin(NS_Annie.misc, {"Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech", "Disable"})
 	PermaShow(NS_Annie.ult.u3)
 	PermaShow(NS_Annie.misc.E.eb1)
 -----------------------------------
@@ -214,6 +213,7 @@ local function CheckR()
 		if hit >= NS_Annie.ult.u2:Value() then CastSkillShot(_R, pos) end
 	end
 end
+
 local function KillSteal()
 	for i = 1, C do
 		local enemy = Enemies[i]
@@ -231,25 +231,6 @@ local function KillSteal()
 	end
 end
 
-local function QLastHit(minion)
-	local Health = Mix:HealthPredict(minion, 1000*(Q.Delay + GetDistance(minion)/Q.Speed), "OW")
-	if Health > 0 and Q.Damage(minion) > Health then
-		CastTargetSpell(minion, _Q)
-	end
-end
-
-local function LaneClear()
-	if ManaCheck(NS_Annie.Q.MPlc:Value()) and ((NS_Annie.Q.s2:Value() and not D.stun) or not NS_Annie.Q.s2:Value()) then
-		for _, minion in pairs(Cr.tminion) do
-			if NS_Annie.Q.c:Value() == 1 then QLastHit(minion) else CastTargetSpell(minion, _Q) end
-    	end
-    end
-	if ManaCheck(NS_Annie.W.MPlc:Value()) and ((NS_Annie.W.s:Value() and not D.stun) or not NS_Annie.W.s:Value()) then
-		local pos, hit = GetFarmPosition2(W.Range, 180, Cr.tminion)
-		if hit >= NS_Annie.W.h:Value() then CastSkillShot(_W, pos) end
-	end
-end
-
 local function JungleClear()
 	if not Cr.mmob then return end
 	local mob = Cr.mmob
@@ -261,13 +242,16 @@ local function JungleClear()
 	end
 end
 
-local function DrawQLastHit()
+local function QFarmAndDraw()
 	for _, minion in pairs(Cr.tminion) do
-		local HPPred = Mix:HealthPredict(minion, 1000*(Q.Delay + GetDistance(minion)/Q.Speed), "OW")
+		local HPPred = Mix:HealthPredict(minion, 1000*Q.Delay + GetDistanceSqr(minion)/Q.Speed, "OW")
 		local Pos = Vector(minion)
-		if Q.Damage(minion) > HPPred then
-			DrawCircle3D(Pos.x, Pos.y, Pos.z, 50, 1, NS_Annie.dw.lh.c2:Value(), 20)
-		elseif Q.Damage(minion)*2.5 > minion.health then
+		if HPPred > 0 and Q.Damage(minion) > HPPred then
+			if NS_Annie.dw.lh.e:Value() then DrawCircle3D(Pos.x, Pos.y, Pos.z, 50, 1, NS_Annie.dw.lh.c2:Value(), 20) end
+			if (mode == "LastHit" and ManaCheck(NS_Annie.Q.MPlh:Value()) and ((NS_Annie.Q.s3:Value() and not D.stun) or not NS_Annie.Q.s3:Value())) or (mode == "LaneClear" and ManaCheck(NS_Annie.Q.MPlc:Value()) and ((NS_Annie.Q.s2:Value() and not D.stun) or not NS_Annie.Q.s2:Value())) then
+				CastTargetSpell(minion, _Q)
+			end
+		elseif Q.Damage(minion)*2.5 > minion.health and NS_Annie.dw.lh.e:Value() then
 			DrawCircle3D(Pos.x, Pos.y, Pos.z, 50, 1, NS_Annie.dw.lh.c1:Value(), 20)
 		end
 	end
@@ -290,7 +274,7 @@ local function DmgHPBar()
 end
 
 local function UseE(unit, spell)
-	if Mix:Mode() == "Combo" and NS_Annie.E.cb:Value() and unit.type == "AIHeroClient" and unit.team == MINION_ENEMY then
+	if mode == "Combo" and NS_Annie.E.cb:Value() and unit.type == "AIHeroClient" and unit.team == MINION_ENEMY then
 		if spell.name:lower():find("attack") and spell.target == myHero and IsReady(_E) then
 			CastSpell(_E)
 		end
@@ -324,7 +308,7 @@ local function Tick()
 	if myHero.dead or not Enemies[C] then return end
 	local QTarget = IsReady(_Q) and Q.Target:GetTarget()
 	local WTarget = IsReady(_W) and W.Target:GetTarget()
-	local mode = Mix:Mode()
+	mode = Mix:Mode()
 	if mode == "Combo" and CCast then
 		if IsReady(_Q) and NS_Annie.Q.cb:Value() then CastQ(QTarget) end
 		if IsReady(_W) and NS_Annie.W.cb:Value() then CastW(WTarget) end
@@ -343,16 +327,7 @@ local function Tick()
     end
 
     if mode == "LaneClear" and CCast then
-    	Cr:Update()
-		LaneClear()
 		JungleClear()
-    end
-
-    if mode == "LastHit" and CCast and IsReady(_Q) and ManaCheck(NS_Annie.Q.MPlh:Value()) and ((NS_Annie.Q.s3:Value() and not D.stun) or not NS_Annie.Q.s3:Value()) then
-    	Cr:Update()
-		for _, minion in pairs(Cr.tminion) do
-			QLastHit(minion)
-		end
     end
 
 	KillSteal()
@@ -372,7 +347,10 @@ local function Drawings()
 	if myHero.dead or not Enemies[C] then return end
 	DmgHPBar()
 	DrawRange()
-	if NS_Annie.dw.lh.e:Value() and IsReady(_Q) and (Mix:Mode() == "LaneClear" or Mix:Mode() == "LastHit") then DrawQLastHit() end
+	if mode == "LaneClear" or mode == "LastHit" then
+		Cr:Update()
+		if IsReady(_Q) then QFarmAndDraw() end
+	end
 end
 ------------------------------------
 
