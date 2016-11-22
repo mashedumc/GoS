@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.098 ]]--
+--[[ Mix Lib Version 0.0985 ]]--
 
-local MixLibVersion = 0.098
+local MixLibVersion = 0.0985
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -33,7 +33,7 @@ do
 	}
 	local c, t, fp = 0, {}, function(n) local s = n == 1 and "" or "s" Mix_Print(n.." file"..s.." need to be download. Please wait...") end
     
-	for i = 1, 5 do
+	for i = 1, 6 do
 		if not FileExist(COMMON_PATH..FilesCheck[1][i]) then
 			c = c + 1
 			t[c] = i
