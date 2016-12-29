@@ -1,6 +1,6 @@
---[[ Mix Lib Version 0.0985 ]]--
+--[[ Mix Lib Version 0.099 ]]--
 
-local MixLibVersion = 0.0985
+local MixLibVersion = 0.099
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
 local OW, gw, Check, RIP = mc_cfg_orb.orb:Value(), {"Combo", "Harass", "LaneClear", "LastHit"}, Set {5, 8, 21, 22}, function() end
@@ -9,6 +9,9 @@ local fixpos = function(unit) local fx = fix[unit.charName] and fix[unit.charNam
 local hpbar = function(unit) return { x = unit.hpBarPos.x + fixpos(unit).x, y = unit.hpBarPos.y + fixpos(unit).y } end
 local hpP = function(unit) return (unit.health + unit.shieldAD)*103/(unit.maxHealth + unit.shieldAD) end
 local dmgP = function(dmg, unit) return dmg*103/(unit.maxHealth + unit.shieldAD) end
+local min, max, saveColor = math.min, math.max, {};
+local colors = {{255, 0, 0}, {255, 128, 0}, {255, 255, 0}, {128, 255, 0}, {0, 255, 0}, {0, 255, 128}, {0, 255, 255}, {0, 128, 255}, {0, 0, 255}, {128, 0, 255}, {255, 0, 255}, {255, 255, 255}}
+colors[0] = {0, 0, 0}
 local Mix_Print = function(text) PrintChat(string.format("<font color=\"#00B359\"><b>[Mix Lib]:</b></font><font color=\"#FFFFFF\"> %s</font>", tostring(text))) end
 
 do
@@ -191,10 +194,15 @@ end
 local lastMove = 0
 function MixLib:Move(Pos)
 	if lastMove + 0.32 < os.clock() then
-		if GetDistance(Pos) > 100 then
-			local mPos = GetMousePos()
-			local POS = Pos or Vector(myHero.pos + Vector(mPos - myHero.pos):normalized()*math.min(GetDistance(mPos), 400))
-			MoveToXYZ(POS)
+		local pos = Pos or GetMousePos()
+		if GetDistance(pos) > 100 then
+			if Pos then
+				MoveToXYZ(Pos)
+			else
+				local mPos = GetMousePos()
+				local POS = Pos or Vector(myHero.pos + Vector(mPos - myHero.pos):normalized()*math.min(GetDistance(mPos), 400))
+				MoveToXYZ(POS)
+			end
 		end
 		lastMove = os.clock()
 	end
@@ -295,7 +303,7 @@ function DrawDmgHPBar:Draw()
 	end
 end
 
-function DrawDmgHPBar:GetPos(i) -- members: x, y, fill(number), show(true/false)
+function DrawDmgHPBar:GetPos(i) -- members: x, y, fill[number], show[true/false]
 	return { x = self.value[i].x, y = self.value[i].y, fill = self.data[i].fill, show = self.value[i].show }
 end
 
@@ -320,6 +328,64 @@ function DCircle:Draw(Pos, bonusQuality)
 		local bQuality, menuQuality = bonusQuality or 0, self.cfg[self.link].r2:Value()*0.01
 		DrawCircle3D(Pos.x, Pos.y, Pos.z, self.range, self.width, self.cfg[self.link].r3:Value(), self.range*(20+bQuality)/100*menuQuality)
 	end
+end
+
+local function UpdateColor(color, step)
+	local R, G, B = color[1], color[2], color[3]
+	if (R == 255 and B == 0) then
+		G = min(255, G + step);
+	end
+	if (G == 255 and B == 0) then
+		R = max(0, R - step);
+	end
+	if (G == 255 and R == 0) then
+		B = min(255, B + step)
+	end
+	if (B == 255 and R == 0) then
+		G = max(0, G - step)
+	end
+	if (B == 255 and G == 0) then
+		R = min(255, R + step)
+	end
+	if (R == 255 and B == 255) then
+		G = min(255, G + step)
+	end
+	if (R > 0 and R == G and G == B) then
+		R = max(0, R - step);
+		G = max(0, G - step);
+		B = max(0, B - step);
+	end
+	if (G == 0 and B == 0) then
+		R = min(255, R + step)
+	end
+	return {R, G, B}
+end
+
+local function DrawLinesColor(t,w,c,a,size,step) --DrawLines2
+	for i = 1, size do
+		if t[i].x > 0 and t[i].y > 0 and t[i+1].x > 0 and t[i+1].y > 0 then
+			DrawLine(t[i].x, t[i].y, t[i+1].x, t[i+1].y, w, ARGB(a, c[i][1], c[i][2], c[i][3]))
+			c[i] = UpdateColor(c[i], step);
+		end
+	end
+end
+
+--Example: DrawCircleColor(myHero.pos, myHero.range + myHero.boundingRadius*2, "test")
+local function DrawCircleColor(pos, radius, id, step, alphaColor, width, quality) -- DrawCircle3D | id for save current color, step: change faster (1->255)
+	quality = quality and 2 * math.pi / quality or 2 * math.pi / (radius / 5)
+	local points = {}
+	local size = 0
+	alphaColor  = alphaColor or 255
+	step = step or 10	
+	local x, y, z = pos.x, pos.y, pos.z
+	if not saveColor[id] then saveColor[id] = {} end
+	for theta = 0, 2 * math.pi + quality, quality do
+		local c = WorldToScreen(0, Vector(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
+		size = size + 1;
+		points[size] = Vector(c.x, c.y)
+		if not saveColor[id][size] then saveColor[id][size] = colors[size%13] end
+	end
+	DrawLinesColor(points, width or 1, saveColor[id], alphaColor, size - 1, step)
 end
 
 do
