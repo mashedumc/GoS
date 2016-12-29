@@ -321,7 +321,7 @@ function DCircle:Draw(Pos, bonusQuality)
 	end
 end
 
-local function UpdateColor(color, step)
+function UpdateColor(color, step)
 	local R, G, B = color[1], color[2], color[3]
 	if (R == 255 and B == 0) then
 		G = min(255, G + step);
@@ -362,7 +362,7 @@ local function DrawLinesColor(t,w,c,a,size,step) --DrawLines2
 end
 
 --Example: DrawCircleColor(myHero.pos, myHero.range + myHero.boundingRadius*2, "test")
-local function DrawCircleColor(pos, radius, id, step, alphaColor, width, quality) -- DrawCircle3D | id for save current color, step: change faster (1->255)
+function DrawCircleColor(pos, radius, id, step, alphaColor, width, quality) -- DrawCircle3D | id for save current color, step: change faster (1->255)
 	quality = quality and 2 * math.pi / quality or 2 * math.pi / (radius / 5)
 	local points = {}
 	local size = 0
