@@ -194,16 +194,7 @@ end
 local lastMove = 0
 function MixLib:Move(Pos)
 	if lastMove + 0.32 < os.clock() then
-		local pos = Pos or GetMousePos()
-		if GetDistance(pos) > 100 then
-			if Pos then
-				MoveToXYZ(Pos)
-			else
-				local mPos = GetMousePos()
-				local POS = Pos or Vector(myHero.pos + Vector(mPos - myHero.pos):normalized()*math.min(GetDistance(mPos), 400))
-				MoveToXYZ(POS)
-			end
-		end
+		if GetDistanceSqr(Pos) > 10000 then MoveToXYZ(Pos) end
 		lastMove = os.clock()
 	end
 end
