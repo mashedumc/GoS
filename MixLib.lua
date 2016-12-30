@@ -1,5 +1,10 @@
 --[[ Mix Lib Version 0.099 ]]--
-
+if FileExist(COMMON_PATH.."MixLib.lua") then
+  require('MixLib')
+else
+  PrintChat("MixLib not found. Please wait for download.")
+  DownloadFileAsync("https://raw.githubusercontent.com/VTNEETS/GoS/master/MixLib.lua", COMMON_PATH.."MixLib.lua", function() PrintChat("Downloaded MixLib. Please 2x F6!") end) return
+end 
 local MixLibVersion = 0.099
 local Reback = {_G.AttackUnit, _G.MoveToXYZ, _G.CastSkillShot, _G.CastSkillShot2, _G.CastSpell, _G.CastTargetSpell}
 local QWER, dta = {"_Q", "_W", "_E", "_R"}, {circular = function(unit, data) return GetCircularAOEPrediction(unit, data) end, linear = function(unit, data) return GetLinearAOEPrediction(unit, data) end, cone = function(unit, data) return GetConicAOEPrediction(unit, data) end}
